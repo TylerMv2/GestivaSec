@@ -1,0 +1,39 @@
+# GESTIVA SECURITY — REGISTRY ENGINE: TECHNICAL DEBT REGISTRY
+# Non-binary 9-category technical debt classification engine
+
+technical_debt:
+  architectural_debt:
+    - id: "DEBT-ARQ-001"
+      description: "Coexistencia de colectores legacy NOC y motor DDD"
+      impact: "HIGH"
+      owner: "Principal Software Architect"
+
+  documentation_debt:
+    - id: "DEBT-DOC-001"
+      description: "24 archivos de especificación dispersos en la raíz del repositorio"
+      impact: "MEDIUM"
+      owner: "Principal Product Architect"
+
+  security_debt: []
+  performance_debt: []
+  operational_debt: []
+
+  ux_debt:
+    - id: "DEBT-UX-001"
+      description: "Falta de paneles visuales en UI para roles y permisos RBAC"
+      impact: "MEDIUM"
+      owner: "Principal UX Architect"
+
+  ui_debt: []
+  dependency_debt: []
+
+  deprecation_debt:
+    - id: "DEBT-DEP-001"
+      description: "Uso de datetime.utcnow() deprecado en Python 3.12+ (41 ocurrencias)"
+      impact: "MEDIUM"
+      owner: "Principal Software Architect"
+
+    - id: "DEBT-DEP-002"
+      description: "Uso de @app.on_event('startup') deprecado en FastAPI"
+      impact: "LOW"
+      owner: "Principal Software Architect"

@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-cyan); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">
+            <i class="fa-solid fa-terminal"></i> GESTIVA CENTRO DE REGISTROS (LOGS EXPLORER)
+        </h2>
+    </div>
+</div>
+
+<!-- Kibana style search and filter bar -->
+<div class="cyber-grid">
+    <div class="col-12">
+        <div class="cyber-card" style="margin-bottom:0;">
+            <div class="cyber-grid" style="gap:15px;">
+                <div class="col-6">
+                    <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;"><i class="fa-solid fa-magnifying-glass"></i> BÚSQUEDA TEXTUAL (KIBANA STYLE)</label>
+                    <input type="text" class="cyber-input mono" id="logs-search-query" onkeyup="triggerSearch(event)" placeholder="e.g. Host gestivaone.com UP or SSH connection failed">
+                </div>
+                
+                <div class="col-2">
+                    <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">NIVEL LOG</label>
+                    <select class="cyber-select" id="logs-level-filter" onchange="loadLogsBoard()">
+                        <option value="">-- Todos --</option>
+                        <option value="Info">Info</option>
+                        <option value="Warn">Warn</option>
+                        <option value="Error">Error</option>
+                    </select>
+                </div>
+                
+                <div class="col-2">
+                    <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">ASOCIADO A HOST</label>
+                    <select class="cyber-select" id="logs-host-filter" onchange="loadLogsBoard()">
+                        <option value="">-- Todos --</option>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                
+                <div class="col-2">
+                    <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">SERVICIO</label>
+                    <select class="cyber-select" id="logs-service-filter" onchange="loadLogsBoard()">
+                        <option value="">-- Todos --</option>
+                        <option value="Ping">Ping</option>
+                        <option value="DNS">DNS</option>
+                        <option value="HTTP">HTTP</option>
+                        <option value="HTTPS">HTTPS</option>
+                        <option value="TLS">TLS</option>
+                        <option value="SSH">SSH</option>
+                        <option value="PortAudit">PortAudit</option>
+                        <option value="System">System</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:20px; border-top:1px solid rgba(255,255,255,0.05); padding-top:12px; margin-top:12px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:8px;" class="mono">
+                    <input type="checkbox" id="filter-hide-internal" onchange="loadLogsBoard()" style="cursor:pointer; width:16px; height:16px;">
+                    <label for="filter-hide-internal" style="cursor:pointer; font-size:0.82rem; color:var(--text-muted);"><i class="fa-solid fa-eye-slash"></i> Ocultar Localhost (127.0.0.1) y Ruido de Bucles</label>
+                </div>
+                
+                <div style="border-left: 1px solid rgba(255,255,255,0.1); height: 16px;"></div>
+                
+                <!-- Alert Suppressions List -->
+                <div style="display:flex; align-items:center; gap:10px;" class="mono">
+                    <span style="font-size:0.82rem; color:var(--neon-purple); font-weight:bold;"><i class="fa-solid fa-bell-slash"></i> SILENCIAR ALERTAS DE:</span>
+                    <label style="cursor:pointer; font-size:0.78rem; display:flex; align-items:center; gap:4px; color:var(--text-muted);">
+                        <input type="checkbox" class="suppress-check" value="Ping" onchange="saveAlertSuppressions()"> Ping
+                    </label>
+                    <label style="cursor:pointer; font-size:0.78rem; display:flex; align-items:center; gap:4px; color:var(--text-muted);">
+                        <input type="checkbox" class="suppress-check" value="DNS" onchange="saveAlertSuppressions()"> DNS
+                    </label>
+                    <label style="cursor:pointer; font-size:0.78rem; display:flex; align-items:center; gap:4px; color:var(--text-muted);">
+                        <input type="checkbox" class="suppress-check" value="SSH" onchange="saveAlertSuppressions()"> SSH
+                    </label>
+                    <label style="cursor:pointer; font-size:0.78rem; display:flex; align-items:center; gap:4px; color:var(--text-muted);">
+                        <input type="checkbox" class="suppress-check" value="System" onchange="saveAlertSuppressions()"> System
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wireshark & Live Packet Inspection Console -->
+<div class="cyber-grid" style="margin-top: 20px;">
+    <div class="col-12">
+        <div class="cyber-card warning" style="border-color: var(--neon-cyan); background: rgba(13, 22, 38, 0.35);">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-cyan);"><i class="fa-solid fa-network-wired"></i> CONSOLA WIRESHARK & INSPECCIÓN DE PAQUETES (TSHARK)</span>
+                <div style="display:flex; gap:10px;">
+                    <span class="cyber-badge cyan">TSHARK SNIFFER</span>
+                    <button class="cyber-btn" onclick="launchWiresharkGUI()" style="font-size:0.72rem; padding:4px 10px; background:rgba(0, 240, 255, 0.12);"><i class="fa-solid fa-laptop-code"></i> ABRIR WIRESHARK (GUI ESCRITORIO)</button>
+                </div>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:250px;">
+                        <label class="mono" style="font-size:0.82rem; color:var(--text-muted); white-space:nowrap;">FILTRO PROTOCOLO:</label>
+                        <input type="text" id="ws-filter" class="cyber-input mono" value="tcp or icmp or udp" style="margin-bottom:0; padding:6px 10px; font-size:0.82rem;" placeholder="e.g. tcp port 80 or icmp">
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label class="mono" style="font-size:0.82rem; color:var(--text-muted);">MUESTRAS:</label>
+                        <select id="ws-count" class="cyber-select mono" style="margin-bottom:0; padding:6px 10px; font-size:0.82rem; width:80px;">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:6px;" class="mono">
+                        <input type="checkbox" id="ws-root" checked style="cursor:pointer; width:16px; height:16px;">
+                        <label for="ws-root" style="cursor:pointer; font-size:0.8rem; color:var(--neon-magenta);"><i class="fa-solid fa-user-shield"></i> SUDO / ROOT</label>
+                    </div>
+                    
+                    <button class="cyber-btn" onclick="startPacketCapture()" style="background:rgba(0, 240, 255, 0.1); border-color:var(--neon-cyan); font-size:0.8rem;"><i class="fa-solid fa-play"></i> CAPTURAR PAQUETES (TSHARK)</button>
+                </div>
+                
+                <div style="position:relative;">
+                    <div class="mono" style="font-size:0.75rem; color:var(--text-muted); padding:4px 10px; background:rgba(255,255,255,0.03); border-radius:6px 6px 0 0; border:1px solid var(--border-soft); border-bottom:none; display:flex; justify-content:space-between;">
+                        <span><i class="fa-solid fa-wave-square"></i> STREAM DE PAQUETES EN TIEMPO REAL (WIRESHARK / TSHARK ENGINE)</span>
+                        <span id="ws-status" style="color:var(--neon-cyan);">EN ESPERA</span>
+                    </div>
+                    <pre id="ws-console" class="mono" style="margin:0; padding:12px; height:180px; overflow-y:auto; background:#040914; border:1px solid var(--border-soft); border-radius:0 0 8px 8px; color:#00f0ff; font-size:0.8rem; line-height:1.4; text-shadow:0 0 4px rgba(0,240,255,0.3); white-space:pre-wrap; word-break:break-all;">[+] Consola Wireshark lista. Presione 'CAPTURAR PAQUETES' para iniciar inspección de red o 'ABRIR WIRESHARK (GUI)' para la aplicación gráfica...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Logs display table -->
+    <div class="col-12">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-list"></i> TELEMETRÍAS REGISTRADAS</span>
+                <span class="cyber-badge cyan" id="logs-count-badge">0 REGISTROS</span>
+            </div>
+            
+            <div class="cyber-table-container">
+                <table class="cyber-table" style="font-size:0.85rem;">
+                    <thead>
+                        <tr>
+                            <th style="width:100px;">Nivel</th>
+                            <th style="width:180px;">Timestamp</th>
+                            <th style="width:180px;">Host</th>
+                            <th style="width:120px;">Servicio</th>
+                            <th>Mensaje Telemetría</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-board-body">
+                        <tr>
+                            <td colspan="5" style="text-align:center;" class="mono text-muted">Cargando registros...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination controllers -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; border-top:1px dashed rgba(255,255,255,0.05); padding-top:15px;">
+                <button class="cyber-btn" id="btn-logs-prev" onclick="prevLogsPage()"><i class="fa-solid fa-arrow-left"></i> ANTERIOR</button>
+                <span class="mono text-muted" id="logs-page-indicator">PAGINA 1</span>
+                <button class="cyber-btn" id="btn-logs-next" onclick="nextLogsPage()">SIGUIENTE <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Logs Viewer Scripts -->
+<script>
+    let limit = 20;
+    let offset = 0;
+
+    async function loadHostsFilter() {
+        try {
+            const hosts = await API.getHosts();
+            const filter = document.getElementById('logs-host-filter');
+            hosts.forEach(h => {
+                filter.innerHTML += `<option value="${h.id}">${h.hostname}</option>`;
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function loadLogsBoard() {
+        try {
+            const params = {
+                limit: limit,
+                offset: offset
+            };
+            
+            const level = document.getElementById('logs-level-filter').value;
+            const hostId = document.getElementById('logs-host-filter').value;
+            const service = document.getElementById('logs-service-filter').value;
+            const search = document.getElementById('logs-search-query').value;
+            const hideInternal = document.getElementById('filter-hide-internal').checked;
+            
+            if (level) params.level = level;
+            if (hostId) params.host_id = hostId;
+            if (service) params.service = service;
+            if (search) params.search = search;
+            if (hideInternal) params.hide_internal = true;
+
+            const res = await API.getLogs(params);
+            document.getElementById('logs-count-badge').textContent = `${res.total} REGISTROS`;
+            
+            const body = document.getElementById('logs-board-body');
+            body.innerHTML = '';
+            
+            if (res.logs.length > 0) {
+                res.logs.forEach(l => {
+                    let lvlClass = 'cyan';
+                    if (l.level === 'Error') lvlClass = 'magenta';
+                    else if (l.level === 'Warn') lvlClass = 'orange';
+
+                    body.innerHTML += `
+                        <tr class="mono">
+                            <td><span class="cyber-badge ${lvlClass}">${l.level}</span></td>
+                            <td>${new Date(l.timestamp).toLocaleString()}</td>
+                            <td style="color:var(--neon-cyan); font-weight:700;">${l.hostname} (${l.source_ip})</td>
+                            <td>${l.service}</td>
+                            <td>${l.message}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center;" class="mono text-muted">No se registran logs coincidentes en base de datos.</td>
+                    </tr>
+                `;
+            }
+
+            // Manage buttons status
+            document.getElementById('btn-logs-prev').disabled = offset === 0;
+            document.getElementById('btn-logs-next').disabled = (offset + limit) >= res.total;
+            
+            const pageNum = Math.floor(offset / limit) + 1;
+            document.getElementById('logs-page-indicator').textContent = `PAGINA ${pageNum} / ${Math.max(1, Math.ceil(res.total / limit))}`;
+            
+        } catch (e) {
+            console.error("Failed to query logs:", e);
+        }
+    }
+
+    function triggerSearch(e) {
+        if (e.key === 'Enter' || e.target.value === '') {
+            offset = 0;
+            loadLogsBoard();
+        }
+    }
+
+    function prevLogsPage() {
+        if (offset >= limit) {
+            offset -= limit;
+            loadLogsBoard();
+        }
+    }
+    
+    function nextLogsPage() {
+        offset += limit;
+        loadLogsBoard();
+    }
+
+    async function loadAlertSuppressions() {
+        try {
+            const settings = await API.getSettings();
+            const integrations = settings.find(s => s.module_name === 'API_Integrations');
+            if (integrations && integrations.config) {
+                const suppressed = integrations.config.suppressed_alert_categories || [];
+                const checkboxes = document.querySelectorAll('.suppress-check');
+                checkboxes.forEach(cb => {
+                    cb.checked = suppressed.includes(cb.value);
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load alert suppressions:", e);
+        }
+    }
+
+    async function saveAlertSuppressions() {
+        try {
+            const checkboxes = document.querySelectorAll('.suppress-check');
+            const suppressed = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) suppressed.push(cb.value);
+            });
+            
+            await API.updateSetting('API_Integrations', {
+                config_update: { suppressed_alert_categories: suppressed }
+            });
+            
+            console.log("Alert suppressions saved successfully: ", suppressed);
+        } catch (error) {
+            alert("Error al guardar políticas de supresión: " + error.message);
+        }
+    }
+
+    async function launchWiresharkGUI() {
+        const consoleEl = document.getElementById('ws-console');
+        const statusEl = document.getElementById('ws-status');
+        consoleEl.textContent = '[+] Solicitando lanzamiento de Wireshark GUI en el escritorio de la máquina local...\n';
+        statusEl.textContent = 'LANZANDO GUI...';
+        statusEl.style.color = 'var(--neon-orange)';
+        
+        try {
+            const res = await fetch('/api/diagnostics/launch_tool', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tool_name: 'wireshark' })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                consoleEl.textContent += `[+] ${data.message || 'Wireshark se ejecutó en segundo plano.'}\n`;
+                statusEl.textContent = 'GUI INICIADA';
+                statusEl.style.color = 'var(--neon-green)';
+            } else {
+                consoleEl.textContent += `[!] Error: ${data.detail || 'Fallo al iniciar Wireshark'}\n`;
+                statusEl.textContent = 'ERROR';
+                statusEl.style.color = 'var(--neon-magenta)';
+            }
+        } catch (err) {
+            consoleEl.textContent += `[!] Error de conexión: ${err.message}\n`;
+            statusEl.textContent = 'ERROR DE RED';
+            statusEl.style.color = 'var(--neon-magenta)';
+        }
+    }
+
+    async function startPacketCapture() {
+        const filter = document.getElementById('ws-filter').value.trim() || 'tcp or udp or icmp';
+        const count = document.getElementById('ws-count').value;
+        const runAsRoot = document.getElementById('ws-root').checked;
+        const consoleEl = document.getElementById('ws-console');
+        const statusEl = document.getElementById('ws-status');
+        
+        consoleEl.textContent = `[+] Iniciando captura de ${count} paquetes con filtro: [${filter}]...\n[+] Por favor espere mientras TShark analiza la interfaz...\n`;
+        statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> CAPTURANDO...';
+        statusEl.style.color = 'var(--neon-orange)';
+        
+        const command = `tshark -i any -c ${count} -Y "${filter}" 2>/dev/null || tcpdump -i any -c ${count} -n "${filter}" 2>/dev/null || ping -c 3 127.0.0.1`;
+        
+        try {
+            const res = await fetch('/api/diagnostics/terminal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command: command, run_as_root: runAsRoot })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (data.stdout && data.stdout.trim()) {
+                    consoleEl.textContent = data.stdout;
+                } else if (data.stderr && data.stderr.trim()) {
+                    consoleEl.textContent = `[!] Notificaciones de captura:\n` + data.stderr;
+                } else {
+                    consoleEl.textContent = `[+] Captura finalizada sin paquetes en el período de tiempo especificado.`;
+                }
+                statusEl.textContent = `CAPTURA FINALIZADA (EXIT ${data.exit_code || 0})`;
+                statusEl.style.color = 'var(--neon-green)';
+            } else {
+                consoleEl.textContent = `[!] Error (${res.status}): ${data.detail || 'Error en ejecución de TShark'}`;
+                statusEl.textContent = 'FALLO';
+                statusEl.style.color = 'var(--neon-magenta)';
+            }
+        } catch (err) {
+            consoleEl.textContent = `[!] Error de conexión: ${err.message}`;
+            statusEl.textContent = 'ERROR DE RED';
+            statusEl.style.color = 'var(--neon-magenta)';
+        }
+    }
+
+    // Load initial selectors
+    loadHostsFilter();
+    loadLogsBoard();
+    loadAlertSuppressions();
+    
+    // Auto update logs every 3 seconds (unless search input is active)
+    setInterval(() => {
+        const searchInput = document.getElementById('logs-search-query');
+        if (searchInput && document.activeElement !== searchInput) {
+            loadLogsBoard();
+        }
+    }, 3000);
+</script>
+{% endblock %}

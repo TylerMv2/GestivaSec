@@ -1,0 +1,135 @@
+# GESTIVASEC_UI_DDR.md — UI DESIGN DECISION RECORDS (DDR) REPOSITORY
+
+**Platform:** Gestiva Security (GestivaSec V1 Enterprise SOC Platform)  
+**Document Status:** `APPROVED & LOCKED ARCHITECTURAL RECORD`  
+**Target Audience:** Software Architects, UI/UX Designers, Frontend Engineers, Product Owners  
+**Baseline Alignment:** Enterprise SOC Architecture (16 Bounded Contexts), Level 3 Product Implementation  
+**Date:** 2026-07-26  
+
+---
+
+## 1. EXECUTIVE SUMMARY & PURPOSE
+
+This document constitutes the authoritative Design Decision Records (DDR) repository for **Gestiva Security**. It documents the architectural rationale, problems solved, alternatives evaluated, consequences, and domain relationships for every interface and interaction design decision across the platform.
+
+---
+
+## 2. DESIGN DECISION RECORDS REPOSITORY
+
+### DDR-001: Workflow-Driven Navigation vs Page-Based Routing
+- **Decision ID:** DDR-001
+- **Title:** Persistent Workflow-Driven Navigation Architecture
+- **Status:** `APPROVED`
+- **Context:** SOC analysts perform high-velocity triage across alerts, hosts, and events.
+- **Problem:** Standard page routing destroys analyst context, causing lost search queries and high cognitive load.
+- **Alternatives Considered:** 
+  1. Multi-page routing (Full browser reloads).
+  2. Tabbed sub-views inside page.
+  3. Master-Detail split views with slide-over Inspector Drawers (Selected).
+- **Selected Solution:** Implement non-destructive slide-over Inspector Drawers over master data tables.
+- **Rationale:** Preserves the underlying investigation workspace while enabling deep entity inspection.
+- **Consequences:** Lower analyst fatigue; requires clean drawer state management.
+- **Future Impact:** Scales seamlessly across future threat hunting workflows.
+- **Related Modules:** All 21 Frontend Modules.
+- **Related Backend Capability:** REST APIs with UUID lookups.
+- **Related Domain Entities:** `Asset`, `Alert`, `Incident`, `NormalizedEvent`.
+
+---
+
+### DDR-002: Master Asset Identity via Immutable Asset UUID vs Ephemeral IP
+- **Decision ID:** DDR-002
+- **Title:** Asset Identification by Immutable UUID with Forensic IP History Tracing
+- **Status:** `APPROVED`
+- **Context:** Hosts dynamically change IP addresses (DHCP, K8s pods, cloud auto-scaling).
+- **Problem:** Using IP addresses as asset identity breaks incident correlation when IPs change.
+- **Alternatives Considered:** 
+  1. IP Address as Identity.
+  2. Hostname as Identity.
+  3. Ephemeral Session ID.
+  4. Immutable Asset UUID + `ip_history` log (Selected).
+- **Selected Solution:** Primary identity is an immutable Asset UUID. Ephemeral IPs are pushed into `ip_history`.
+- **Rationale:** Incident evidence remains tethered to the physical/logical asset regardless of network moves.
+- **Consequences:** Requires Asset Resolver in ingestion pipeline.
+- **Related Modules:** Asset Discovery, Inventory, Asset Intelligence, Collectors.
+- **Related Backend Capability:** `AssetResolver` component.
+- **Related Domain Entities:** `DigitalAsset`, `IPHistoryRecord`.
+
+---
+
+### DDR-003: Mandatory Owner Email Assignment (BR-02)
+- **Decision ID:** DDR-003
+- **Title:** Enforcement of Owner Email Assignment on Asset Promotion
+- **Status:** `APPROVED`
+- **Context:** Unowned devices in CMDB delay incident containment.
+- **Selected Solution:** Enforce business rule **`BR-02`**: Every promoted asset must have a valid owner email assigned.
+- **Rationale:** Ensures immediate accountability during critical P1 security incidents.
+- **Related Domain Entities:** `DigitalAsset`, `Organization`.
+
+---
+
+### DDR-004: Multi-Tenant Header Ingestion & UX Scope (BR-0004)
+- **Decision ID:** DDR-004
+- **Title:** Global Organization Scope Header Ingestion
+- **Status:** `APPROVED`
+- **Context:** Gestiva Security operates in multi-tenant mode across enterprise clients (*BR-0004*).
+- **Selected Solution:** Ingest `X-Organization-ID` HTTP header in every API call; display organization badge in global UI topbar.
+- **Rationale:** Guarantees strict multi-tenant isolation at network and UI boundaries.
+- **Related Domain Entities:** `Organization`.
+
+---
+
+### DDR-005: 3-Second Reactive Polling for Real-Time Telemetry
+- **Decision ID:** DDR-005
+- **Title:** Continuous 3000ms Polling Loop for Operational Dashboard
+- **Status:** `APPROVED`
+- **Context:** SOC dashboards require real-time visibility into infrastructure health.
+- **Selected Solution:** 3000ms reactive polling loop with Chart.js line interpolation.
+- **Rationale:** Provides low-overhead real-time telemetry updates.
+- **Related Domain Entities:** Platform Telemetry Summary.
+
+---
+
+### DDR-006: Sliding Inspector Drawer for Entity Deep-Dives
+- **Decision ID:** DDR-006
+- **Title:** Slide-Over Right Panel Inspector Drawer
+- **Status:** `APPROVED`
+- **Context:** Analysts need to view raw JSON logs, asset risk scores, and IoC reputation without navigating away.
+- **Selected Solution:** Slide-over Inspector Drawer appearing on the right 40% of the screen.
+- **Rationale:** Keeps 60% of the screen on the primary grid, preserving navigation state.
+
+---
+
+### DDR-007: Master-Detail Layout Pattern for Security Operations
+- **Decision ID:** DDR-007
+- **Title:** Split-Pane Master-Detail View
+- **Status:** `APPROVED`
+- **Context:** Incidents contain dozens of correlated alerts and raw events.
+- **Selected Solution:** Master list on the left 35%; detailed workspace on the right 65%.
+
+---
+
+### DDR-008: Real-Time Connection Loss Alerting & Graceful Degradation
+- **Decision ID:** DDR-008
+- **Title:** Non-Intrusive Offline Reconnecting Badge
+- **Status:** `APPROVED`
+- **Context:** Network latency or backend restart may cause temporary WebSocket/polling drops.
+- **Selected Solution:** Display top-right `● RECONNECTING` badge without destroying screen state.
+
+---
+
+### DDR-009: GestivaSec Event Schema (GES) Unified Visualization
+- **Decision ID:** DDR-009
+- **Title:** Standardized Event Viewer for Normalized Telemetry
+- **Status:** `APPROVED`
+- **Context:** Heterogeneous raw logs (Syslog, Windows, CloudTrail) confuse analysts during triage.
+- **Selected Solution:** Render all normalized events in unified GES format (Observer, Source + GeoIP, Destination + Asset UUID, Classification).
+- **Related Domain Entities:** `NormalizedEvent`, `RawEventRecord`.
+
+---
+
+### DDR-010: Explicit Empty and Error Screen States
+- **Decision ID:** DDR-010
+- **Title:** 12-State Mandatory UI Transition Model
+- **Status:** `APPROVED`
+- **Context:** Generic blank pages confuse users when searches return zero records or API calls fail.
+- **Selected Solution:** Mandate explicit UI state handling for `EMPTY`, `ERROR`, `PARTIAL_FAILURE`, `PERMISSION_DENIED`.

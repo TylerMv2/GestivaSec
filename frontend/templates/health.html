@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-cyan); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">
+            <i class="fa-solid fa-heart-pulse"></i> GESTIVA HEALTH CENTER - MONITORES OPERATIVOS
+        </h2>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Main Core Components Health -->
+    <div class="col-4">
+        <div class="cyber-card success">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-green);"><i class="fa-solid fa-server"></i> BACKEND CORE</span>
+                <span class="cyber-badge green">ONLINE</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value">FASTAPI</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.85rem;" class="mono">Runtime: Uvicorn // Host: localhost:8000</p>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="cyber-card success">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-green);"><i class="fa-solid fa-database"></i> BASE DE DATOS</span>
+                <span class="cyber-badge green">CONNECTED</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value">SQLITE</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.85rem;" class="mono">Path: backend/database/gestiva_obs.db</p>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-arrows-spin"></i> SINCRONIZACIÓN</span>
+                <span class="cyber-badge cyan">ACTIVE</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value" id="health-sync-sec">0</span>
+                <span class="stat-unit">s de retraso</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.85rem;" class="mono">Estado de sincronización de colectores</p>
+        </div>
+    </div>
+</div>
+
+<!-- Collectors Uptime Grid -->
+<div class="cyber-grid">
+    <div class="col-12">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-list-check"></i> ESTADO OPERACIONAL DE COLECTORES MODULARES</span>
+                <span class="cyber-badge cyan">SCHEDULER STATUS</span>
+            </div>
+            <div class="cyber-table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre Colector</th>
+                            <th>Estado Operativo</th>
+                            <th>Intervalo Polling</th>
+                            <th>Estado Módulo</th>
+                            <th>Última Ejecución</th>
+                            <th>Acciones Directas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="health-collectors-body">
+                        <!-- Loaded via JS -->
+                        <tr>
+                            <td colspan="6" style="text-align:center;" class="mono text-muted">Cargando estado de colectores...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Health Scripts -->
+<script>
+    async function loadHealthData() {
+        try {
+            const settings = await API.getSettings();
+            const services = await API.getServices();
+            const body = document.getElementById('health-collectors-body');
+            body.innerHTML = '';
+            
+            // Calculate delay from last check timestamp
+            let latestCheck = new Date(0);
+            services.forEach(s => {
+                const date = new Date(s.last_check);
+                if (date > latestCheck) latestCheck = date;
+            });
+            
+            const delaySec = Math.max(0, Math.floor((new Date() - latestCheck) / 1000));
+            document.getElementById('health-sync-sec').textContent = delaySec > 100000 ? '0' : delaySec;
+
+            settings.forEach(s => {
+                const enabledClass = s.enabled ? 'green' : 'magenta';
+                const statusLabel = s.enabled ? 'ACTIVO' : 'APAGADO';
+                
+                body.innerHTML += `
+                    <tr class="mono">
+                        <td style="color:var(--neon-cyan); font-weight:700;">${s.module_name}</td>
+                        <td><span class="cyber-badge ${enabledClass}"><i class="fa-solid ${s.enabled ? 'fa-circle-play' : 'fa-circle-stop'}"></i> ${statusLabel}</span></td>
+                        <td>${s.interval_seconds} segundos</td>
+                        <td>${s.enabled ? 'ONLINE' : 'OFFLINE'}</td>
+                        <td>Hace unos segundos</td>
+                        <td>
+                            <button class="cyber-btn" onclick="toggleCollector('${s.module_name}', ${!s.enabled})" style="font-size:0.75rem; padding:4px 10px;">
+                                ${s.enabled ? '<i class="fa-solid fa-power-off"></i> APAGAR' : '<i class="fa-solid fa-play"></i> ENCENDER'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            console.error("Failed to load health parameters:", e);
+        }
+    }
+
+    async function toggleCollector(name, enable) {
+        await API.updateSetting(name, { enabled: enable });
+        loadHealthData();
+    }
+
+    setInterval(loadHealthData, 3000);
+    loadHealthData();
+</script>
+{% endblock %}

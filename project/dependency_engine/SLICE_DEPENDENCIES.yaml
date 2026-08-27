@@ -1,0 +1,19 @@
+# GESTIVA SECURITY — DEPENDENCY ENGINE: SLICE DEPENDENCIES
+
+slice_dependencies:
+  IAM-ORGS:
+    depends_on: ["IAM-LOGIN"]
+  IAM-USERS:
+    depends_on: ["IAM-ORGS"]
+  IAM-ROLES:
+    depends_on: ["IAM-USERS"]
+  IAM-PERMS:
+    depends_on: ["IAM-ROLES"]
+  IAM-OAUTH:
+    depends_on: ["IAM-PERMS"]
+  IAM-SESSIONS:
+    depends_on: ["IAM-OAUTH"]
+  AST-INVENTORY:
+    depends_on: ["IAM-ORGS"]
+  MON-SYNTHETIC:
+    depends_on: ["AST-INVENTORY"]

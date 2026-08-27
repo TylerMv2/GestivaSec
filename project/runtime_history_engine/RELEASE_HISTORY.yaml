@@ -1,0 +1,7 @@
+# GESTIVA SECURITY — RUNTIME HISTORY ENGINE: RELEASE HISTORY
+
+release_history:
+  - version: "v0.1.0"
+    release_date: "2026-07-25"
+    description: "Baseline Foundation Release — IAM, Asset Inventory & Synthetic Probing Engine"
+    arb_status: "APPROVED"

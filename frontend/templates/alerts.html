@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-magenta); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-magenta); text-shadow: 0 0 10px rgba(255, 0, 85, 0.4);">
+            <i class="fa-solid fa-triangle-exclamation"></i> GESTIÓN Y SEGUIMIENTO DE ALERTAS SOC
+        </h2>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Filter Bar -->
+    <div class="col-12">
+        <div class="cyber-card" style="margin-bottom:0; display:flex; gap:15px; align-items:center;">
+            <span class="mono" style="color:var(--neon-cyan);"><i class="fa-solid fa-filter"></i> FILTRAR ESTADO:</span>
+            <button class="cyber-btn" onclick="setFilter('Active')" id="btn-filter-active"><i class="fa-solid fa-bell"></i> Activas</button>
+            <button class="cyber-btn" onclick="setFilter('Acknowledged')" id="btn-filter-ack"><i class="fa-solid fa-eye"></i> Reconocidas</button>
+            <button class="cyber-btn" onclick="setFilter('Resolved')" id="btn-filter-resolved"><i class="fa-solid fa-check"></i> Resueltas</button>
+            <button class="cyber-btn" onclick="setFilter('')" id="btn-filter-all"><i class="fa-solid fa-list"></i> Todas</button>
+        </div>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Alerts Board -->
+    <div class="col-12">
+        <div class="cyber-card critical">
+            <div class="card-header">
+                <span class="card-title critical"><i class="fa-solid fa-table-list"></i> TABLA DE SEGUIMIENTO</span>
+                <span class="cyber-badge magenta" id="board-badge">ACTIVE</span>
+            </div>
+            <div class="cyber-table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Nivel</th>
+                            <th>Origen</th>
+                            <th>Descripción</th>
+                            <th>Fecha y Hora</th>
+                            <th>Estado</th>
+                            <th>Resolución</th>
+                            <th>Notas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alerts-board-body">
+                        <tr>
+                            <td colspan="8" style="text-align:center;" class="mono text-muted">Cargando alertas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Notes modal (inline simple overlay) -->
+<div id="notes-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:3000; align-items:center; justify-content:center;">
+    <div class="cyber-card warning" style="width:400px; padding:25px;">
+        <div class="card-header">
+            <span class="card-title" style="color:var(--neon-orange);"><i class="fa-solid fa-comment-dots"></i> AÑADIR ANOTACIÓN</span>
+        </div>
+        <input type="hidden" id="modal-alert-id">
+        <textarea class="cyber-input" id="modal-alert-notes" style="height:100px; resize:none;" placeholder="Escriba los comentarios de mitigación..."></textarea>
+        <div style="display:flex; gap:10px;">
+            <button class="cyber-btn" onclick="saveAlertNotes()" style="flex:1;"><i class="fa-solid fa-floppy-disk"></i> GUARDAR</button>
+            <button class="cyber-btn magenta" onclick="closeNotesModal()" style="flex:1;"><i class="fa-solid fa-xmark"></i> CANCELAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- Alerts Management Scripts -->
+<script>
+    let currentFilter = 'Active';
+
+    async function loadAlertsBoard() {
+        try {
+            // Highlight active filter button
+            ['Active', 'Acknowledged', 'Resolved', ''].forEach(f => {
+                const btn = document.getElementById(`btn-filter-${f ? f.toLowerCase().substring(0,3) : 'all'}`);
+                if (f === currentFilter) {
+                    btn.classList.add('magenta');
+                    btn.style.boxShadow = '0 0 10px rgba(255, 0, 85, 0.4)';
+                } else {
+                    btn.classList.remove('magenta');
+                    btn.style.boxShadow = 'none';
+                }
+            });
+
+            document.getElementById('board-badge').textContent = currentFilter ? currentFilter.toUpperCase() : 'TODAS';
+
+            const alerts = await API.getAlerts(currentFilter, 100);
+            const body = document.getElementById('alerts-board-body');
+            body.innerHTML = '';
+            
+            if (alerts.length > 0) {
+                alerts.forEach(a => {
+                    let levelClass = 'cyan';
+                    if (a.level === 'Critical') levelClass = 'magenta';
+                    else if (a.level === 'Warning' || a.level === 'Important') levelClass = 'orange';
+
+                    let statusClass = 'cyan';
+                    if (a.status === 'Resolved') statusClass = 'green';
+                    else if (a.status === 'Acknowledged') statusClass = 'orange';
+
+                    const resolvedStr = a.resolved_at ? new Date(a.resolved_at).toLocaleTimeString() : 'N/A';
+                    
+                    body.innerHTML += `
+                        <tr class="mono">
+                            <td><span class="cyber-badge ${levelClass}">${a.level}</span></td>
+                            <td style="color:var(--neon-cyan); font-weight:700;">${a.source}</td>
+                            <td>${a.description}</td>
+                            <td>${new Date(a.timestamp).toLocaleString()}</td>
+                            <td><span class="cyber-badge ${statusClass}">${a.status}</span></td>
+                            <td>${resolvedStr}</td>
+                            <td style="font-size:0.85rem; color:var(--text-muted); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${a.notes || ''}">${a.notes || 'Ninguna'}</td>
+                            <td>
+                                <div style="display:flex; gap:5px;">
+                                    ${a.status !== 'Acknowledged' && a.status !== 'Resolved' ? `<button class="cyber-btn" onclick="ackAlert(${a.id})" style="font-size:0.7rem; padding:3px 8px;">ACK</button>` : ''}
+                                    ${a.status !== 'Resolved' ? `<button class="cyber-btn magenta" onclick="resolveAlert(${a.id})" style="font-size:0.7rem; padding:3px 8px;">RES</button>` : ''}
+                                    <button class="cyber-btn" onclick="openNotesModal(${a.id}, '${a.notes || ''}')" style="font-size:0.7rem; padding:3px 8px; border-color:var(--neon-yellow); color:var(--neon-yellow);"><i class="fa-solid fa-comment"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align:center;" class="mono text-muted">No se registran alertas en este estado.</td>
+                    </tr>
+                `;
+            }
+        } catch (e) {
+            console.error("Failed to load alerts list:", e);
+        }
+    }
+
+    function setFilter(filter) {
+        currentFilter = filter;
+        loadAlertsBoard();
+    }
+
+    async function ackAlert(id) {
+        await API.acknowledgeAlert(id);
+        loadAlertsBoard();
+    }
+    
+    async function resolveAlert(id) {
+        await API.resolveAlert(id);
+        loadAlertsBoard();
+    }
+
+    function openNotesModal(id, notes) {
+        document.getElementById('modal-alert-id').value = id;
+        document.getElementById('modal-alert-notes').value = notes;
+        document.getElementById('notes-overlay').style.display = 'flex';
+    }
+    
+    function closeNotesModal() {
+        document.getElementById('notes-overlay').style.display = 'none';
+    }
+    
+    async function saveAlertNotes() {
+        const id = document.getElementById('modal-alert-id').value;
+        const notes = document.getElementById('modal-alert-notes').value;
+        
+        // Read current status to preserve it
+        const alerts = await API.getAlerts();
+        const currentAlert = alerts.find(a => a.id == id);
+        
+        await API.updateSetting(`../alerts/${id}`, { status: currentAlert.status, notes: notes });
+        closeNotesModal();
+        loadAlertsBoard();
+    }
+
+    loadAlertsBoard();
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+# GESTIVA SECURITY — PROJECT KERNEL MIGRATION AUDIT REPORT
+
+migration_summary:
+  timestamp: "2026-07-26T15:25:17Z"
+  status: "COMPLETED_WITHIN_APPROVED_SCOPE"
+  verification_engine: "tests/test_kernel_integrity.py"
+
+metrics:
+  moved_files: 23
+  removed_legacy_files: 3
+  created_engine_files: 31
+  updated_registry_files: 18
+  broken_links_detected: 0
+  validation_status: "PASS"
+
+details:
+  moved_files_list:
+    destination_docs_02_domain_model:
+      - "AGGREGATE_SPECIFICATION.md"
+      - "DOMAIN_MODEL.md"
+      - "DOMAIN_OPERATION_SPECIFICATION.md"
+      - "ENTITY_SPECIFICATION.md"
+      - "FUNCTIONAL_REQUIREMENTS_SPECIFICATION.md"
+      - "INFORMATION_MODEL.md"
+      - "PRODUCT_SPECIFICATION.md"
+      - "PROJECT_GENESIS_CURRENT_METHODOLOGY_AUDIT.md"
+      - "RELATIONSHIPS.md"
+      - "STATE_MACHINES.md"
+      - "UBIQUITOUS_LANGUAGE.md"
+      - "USER_JOURNEY_SPECIFICATION.md"
+      - "USE_CASE_SPECIFICATION.md"
+      - "VALUE_OBJECTS.md"
+      - "WORKFLOW_SPECIFICATION.md"
+    destination_docs_03_architecture:
+      - "6.0.1_ARCHITECTURE_DRIVERS.md"
+      - "6.0.2_QUALITY_ATTRIBUTE_SCENARIOS.md"
+      - "6.0.3_ARCHITECTURE_CONSTRAINTS.md"
+      - "6.0.4_CROSS_CUTTING_CONCERNS.md"
+      - "6.0.6_ARCHITECTURE_PRINCIPLES.md"
+      - "6.1_ARCHITECTURE_STYLE.md"
+      - "6.2_LAYER_ARCHITECTURE.md"
+      - "6.3_ARCHITECTURE_VIEWS.md"
+
+  removed_legacy_files_list:
+    - "project/IMPLEMENTATION_STATE.yaml"
+    - "project/PRODUCT_BACKLOG.yaml"
+    - "project/CAPABILITY_ROADMAP.yaml"
+
+rollback_and_recovery_plan:
+  restoration_point: "Git Commit Hash / Tag v0.1.0-pre-kernel"
+  rollback_procedure: "git checkout v0.1.0-pre-kernel -- project/ docs/ && rm -rf project/*_engine"
+  success_criteria: "100% de la suite de tests de producto pasando (56 test cases) y 0 specs huérfanas en raíz"
+  reversion_trigger: "Descubrimiento de regresión en backend o fallo en validación de dominios"

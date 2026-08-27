@@ -1,0 +1,7 @@
+# GESTIVA SECURITY — GOVERNANCE ENGINE: ARB RULES
+
+arb_rules:
+  authority: "Architecture Review Board (ARB)"
+  exclusive_decisions: ["APPROVED", "RETURNED", "REJECTED"]
+  studio_allowed_evaluations: ["DRAFT", "IN_PROGRESS", "READY_FOR_REVIEW"]
+  unilateral_approval_prohibited: true

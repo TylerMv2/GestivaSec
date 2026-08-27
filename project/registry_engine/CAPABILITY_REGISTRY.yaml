@@ -1,0 +1,43 @@
+# GESTIVA SECURITY — REGISTRY ENGINE: CAPABILITY REGISTRY
+
+capabilities:
+  - id: "CAP-01"
+    name: "Identity & Access Management (IAM)"
+    status: "COMPLETED"
+    completion_percentage: 100.0
+  - id: "CAP-02"
+    name: "Asset Management"
+    status: "IN_PROGRESS"
+    completion_percentage: 16.6
+  - id: "CAP-03"
+    name: "Monitoring Engine"
+    status: "IN_PROGRESS"
+    completion_percentage: 14.2
+  - id: "CAP-04"
+    name: "Alert Engine"
+    status: "LOCKED"
+    completion_percentage: 20.0
+  - id: "CAP-05"
+    name: "Incident Response"
+    status: "LOCKED"
+    completion_percentage: 16.6
+  - id: "CAP-06"
+    name: "SOC Dashboard"
+    status: "LOCKED"
+    completion_percentage: 16.6
+  - id: "CAP-07"
+    name: "Threat Intelligence"
+    status: "LOCKED"
+    completion_percentage: 20.0
+  - id: "CAP-08"
+    name: "Automation & Playbooks"
+    status: "LOCKED"
+    completion_percentage: 0.0
+  - id: "CAP-09"
+    name: "Integrations & Webhooks"
+    status: "LOCKED"
+    completion_percentage: 0.0
+  - id: "CAP-10"
+    name: "Enterprise Observability"
+    status: "LOCKED"
+    completion_percentage: 0.0

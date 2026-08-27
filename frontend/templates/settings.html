@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-purple); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-purple); text-shadow: 0 0 10px rgba(199, 125, 255, 0.4);">
+            <i class="fa-solid fa-gears"></i> PANEL DE CONFIGURACIÓN DEL SISTEMA Y COLECTORES
+        </h2>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Active Collectors Scheduling Configurations -->
+    <div class="col-8">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-clock"></i> INTERVALOS DE MONITOREO</span>
+                <span class="cyber-badge purple">INTERVALS</span>
+            </div>
+            <div id="settings-modules-container">
+                <!-- Dynamically loaded -->
+                <div class="mono text-muted" style="text-align:center; padding:20px;">Cargando colectores...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API Integrations Credentials Panel -->
+    <div class="col-4">
+        <div class="cyber-card warning">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-purple);"><i class="fa-solid fa-key"></i> CONFIGURACIÓN DE APIS</span>
+                <span class="cyber-badge purple">INTEGRACIONES</span>
+            </div>
+            <div style="font-size:0.88rem; display:flex; flex-direction:column; gap:12px;">
+                <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:5px;">
+                    Administre de forma segura tokens y claves de integración de terceros guardados directamente en su base de datos.
+                </p>
+                <div>
+                    <label class="mono" style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">VERCEL AUTH TOKEN (BEARER)</label>
+                    <input type="password" class="cyber-input mono" id="api-vercel-token" placeholder="vercel_token_..." style="padding:6px 10px; margin-bottom:5px;">
+                </div>
+                <div>
+                    <label class="mono" style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">VERCEL PROJECT ID</label>
+                    <input type="text" class="cyber-input mono" id="api-vercel-project" placeholder="prj_..." style="padding:6px 10px; margin-bottom:5px;">
+                </div>
+                <div>
+                    <label class="mono" style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">VERCEL TEAM ID (OPCIONAL)</label>
+                    <input type="text" class="cyber-input mono" id="api-vercel-team" placeholder="team_..." style="padding:6px 10px; margin-bottom:5px;">
+                </div>
+                <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                    <label class="mono" style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">NOTION AUTH TOKEN</label>
+                    <input type="password" class="cyber-input mono" id="api-notion-token" placeholder="secret_..." style="padding:6px 10px; margin-bottom:5px;">
+                </div>
+                <div>
+                    <label class="mono" style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">NOTION DATABASE ID</label>
+                    <input type="text" class="cyber-input mono" id="api-notion-db" placeholder="database_id" style="padding:6px 10px; margin-bottom:5px;">
+                </div>
+                <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                    <label class="mono" style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">SHODAN API KEY</label>
+                    <input type="password" class="cyber-input mono" id="api-shodan-key" placeholder="shodan_key" style="padding:6px 10px; margin-bottom:5px;">
+                </div>
+                <div>
+                    <label class="mono" style="font-size:0.72rem; color:var(--text-muted); font-weight:bold;">VIRUSTOTAL API KEY</label>
+                    <input type="password" class="cyber-input mono" id="api-virustotal-key" placeholder="virustotal_key" style="padding:6px 10px; margin-bottom:5px;">
+                </div>
+                
+                <button class="cyber-btn" onclick="saveAPICredentials()" style="width:100%; margin-top:5px; font-weight:bold; background:rgba(199, 125, 255, 0.15); border-color:var(--neon-purple);"><i class="fa-solid fa-cloud-arrow-up"></i> APLICAR CREDENCIALES</button>
+            </div>
+        </div>
+        
+        <!-- Environment Variables Check and Info -->
+        <div class="cyber-card warning" style="margin-top:20px;">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-orange);"><i class="fa-solid fa-shield-halved"></i> AUDITORÍA DE ENTORNO (.ENV)</span>
+                <span class="cyber-badge orange">ENVIRONMENT</span>
+            </div>
+            <div class="mono" style="font-size:0.85rem; line-height:1.6; display:flex; flex-direction:column; gap:10px;">
+                <div style="border-bottom:1px dashed rgba(255,255,255,0.05); padding-bottom:8px;">
+                    <span style="color:var(--neon-purple);">DATABASE ENGINE:</span> SQLite<br>
+                    <span style="color:var(--text-muted); font-size:0.78rem;">backend/database/gestiva_obs.db</span>
+                </div>
+                <div style="border-bottom:1px dashed rgba(255,255,255,0.05); padding-bottom:8px;">
+                    <span style="color:var(--neon-purple);">TARGET DOMAINS:</span> gestivaone.com<br>
+                    <span style="color:var(--text-muted); font-size:0.78rem;">Monitoreo TLS, HTTP, HTTPS y DNS</span>
+                </div>
+                <div>
+                    <span style="color:var(--neon-purple);">ESTILO VISUAL:</span> Windows 11 Fluent<br>
+                    <span style="color:var(--text-muted); font-size:0.78rem;">Morado marca Gestiva One</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Configurations Scripts -->
+<script>
+    async function loadSettingsList() {
+        try {
+            const settings = await API.getSettings();
+            const container = document.getElementById('settings-modules-container');
+            container.innerHTML = '';
+            
+            settings.forEach(s => {
+                // Filter out the integrations row from the scheduling lo                if (s.module_name === 'API_Integrations') {
+                    // Populate the API Credentials inputs
+                    const config = s.config || {};
+                    document.getElementById('api-vercel-token').value = config.vercel_auth_token || '';
+                    document.getElementById('api-vercel-project').value = config.vercel_project_id || '';
+                    document.getElementById('api-vercel-team').value = config.vercel_team_id || '';
+                    document.getElementById('api-notion-token').value = config.notion_auth_token || '';
+                    document.getElementById('api-notion-db').value = config.notion_database_id || '';
+                    document.getElementById('api-shodan-key').value = config.shodan_api_key || '';
+                    document.getElementById('api-virustotal-key').value = config.virustotal_api_key || '';
+                    return;
+                }
+                
+                const configStr = JSON.stringify(s.config || {});
+                container.innerHTML += `
+                    <div style="border: 1px solid var(--border-soft); background:rgba(255,255,255,0.01); padding:15px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; border-radius:12px;">
+                        <div>
+                            <h4 style="font-family:var(--font-main); color:var(--text-primary); margin:0;">${s.module_name}</h4>
+                            <p style="color:var(--text-muted); font-size:0.82rem;" class="mono">Config: ${configStr}</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <label class="mono" style="font-size:0.8rem; color:var(--neon-purple);">Intervalo:</label>
+                                <input type="number" id="interval-${s.module_name}" class="cyber-input mono" style="width:70px; margin-bottom:0; padding:4px 8px; text-align:center;" value="${s.interval_seconds}" min="3">
+                                <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">s</span>
+                            </div>
+                            <button class="cyber-btn" onclick="saveSetting('${s.module_name}')" style="font-size:0.75rem; padding:6px 12px;"><i class="fa-solid fa-floppy-disk"></i> APLICAR</button>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function saveSetting(name) {
+        const intervalInput = document.getElementById(`interval-${name}`);
+        const interval = parseInt(intervalInput.value);
+        
+        try {
+            await API.updateSetting(name, { interval_seconds: interval });
+            alert(`Intervalo de ${name} actualizado a ${interval} segundos.`);
+            loadSettingsList();
+        } catch (error) {
+            alert("Error al guardar configuración: " + error.message);
+        }
+    }
+
+    async function saveAPICredentials() {
+        const config = {
+            vercel_auth_token: document.getElementById('api-vercel-token').value.trim(),
+            vercel_project_id: document.getElementById('api-vercel-project').value.trim(),
+            vercel_team_id: document.getElementById('api-vercel-team').value.trim(),
+            notion_auth_token: document.getElementById('api-notion-token').value.trim(),
+            notion_database_id: document.getElementById('api-notion-db').value.trim(),
+            shodan_api_key: document.getElementById('api-shodan-key').value.trim(),
+            virustotal_api_key: document.getElementById('api-virustotal-key').value.trim()
+        };
+        
+        try {
+            await API.updateSetting('API_Integrations', { config_update: config });
+            alert("Credenciales y llaves de APIs actualizadas correctamente en la base de datos.");
+            loadSettingsList();
+        } catch (error) {
+            alert("Error al actualizar credenciales: " + error.message);
+        }
+    }
+
+    loadSettingsList();
+</script>
+{% endblock %}

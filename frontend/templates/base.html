@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GESTIVA Security - {{ title }}</title>
+    
+    <!-- Master Design System Token Registry -->
+    <link rel="stylesheet" href="/static/css/tokens.css?v=1.0">
+    <!-- Custom CSS styles with cache buster -->
+    <link rel="stylesheet" href="/static/css/styles.css?v=7.0">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ChartJS library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Mobile Top Navigation Bar (< 768px screens) -->
+    <div class="mobile-top-bar">
+        <button class="mobile-toggle-btn" onclick="toggleMobileSidebar()">
+            <i class="fa-solid fa-bars"></i> GESTIVA
+        </button>
+        <span id="mobile-device-telemetry" class="mono" style="font-size:0.68rem; color:var(--neon-cyan); background:rgba(0,240,255,0.08); padding:3px 8px; border-radius:12px; border:1px solid rgba(0,240,255,0.2);">AUTO DETECT</span>
+    </div>
+
+    <!-- Backdrop overlay for mobile menu drawer -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar()"></div>
+
+    <div class="gestiva-layout-wrapper">
+        <!-- Permanent Left Sidebar (Windows 11 Fluent Dock) -->
+        <aside class="cyber-sidebar">
+        <div class="logo-container">
+            <div class="logo-text">GESTIVA <span style="font-size:1.05rem; color:#c77dff; font-weight:700; text-transform:uppercase;">Security</span></div>
+            <div class="logo-subtext">SECURITY // NOC // SOC</div>
+        </div>
+        
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" class="cyber-search" id="global-search-input" placeholder="BUSCAR ACTIVO...">
+        </div>
+        
+        <ul class="nav-links" style="margin-top: 15px;">
+            <li id="nav-index"><a href="/"><i class="fa-solid fa-gauge"></i> Panel</a></li>
+            <li id="nav-technical"><a href="/technical"><i class="fa-solid fa-microchip"></i> NOC Técnico</a></li>
+            <li id="nav-executive"><a href="/executive"><i class="fa-solid fa-briefcase"></i> SOC Ejecutivo</a></li>
+            <li id="nav-topology"><a href="/topology"><i class="fa-solid fa-network-wired"></i> Topología</a></li>
+            <li id="nav-inventory"><a href="/inventory"><i class="fa-solid fa-boxes-stacked"></i> Inventario</a></li>
+            <li id="nav-logs"><a href="/logs"><i class="fa-solid fa-terminal"></i> Registros</a></li>
+            <li id="nav-alerts"><a href="/alerts"><i class="fa-solid fa-triangle-exclamation"></i> Alertas</a></li>
+            <li id="nav-health"><a href="/health"><i class="fa-solid fa-heart-pulse"></i> Health</a></li>
+            <li id="nav-settings"><a href="/settings"><i class="fa-solid fa-gears"></i> Config</a></li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="mono" style="font-size: 0.72rem; color: var(--neon-purple); border: 1px solid rgba(199, 125, 255, 0.2); padding: 5px 10px; border-radius: 20px; background: rgba(199, 125, 255, 0.03); letter-spacing: 0.5px; white-space: nowrap; text-align: center;">
+                <i class="fa-regular fa-clock"></i> <span id="cyber-clock">00/00/0000 00:00:00</span>
+            </div>
+            <div id="sidebar-dpi-telemetry" class="footer-note" style="font-size:0.62rem; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">DETECTANDO RESOLUCIÓN...</div>
+        </div>
+    </aside>
+
+    <!-- Global Search Results Modal (Windows 11 Soft Acrylic Overlay) -->
+    <div id="search-modal" style="display:none; position:fixed; top:90px; right:30px; width:450px; max-height:80vh; background:rgba(26, 17, 48, 0.95); backdrop-filter:var(--acrylic-blur); -webkit-backdrop-filter:var(--acrylic-blur); border:1px solid rgba(255,255,255,0.08); border-radius:16px; box-shadow:0 16px 48px rgba(0,0,0,0.4); z-index:2000; padding:20px; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+            <h4 style="font-family:var(--font-main); color:var(--neon-purple); margin:0; font-weight:600;"><i class="fa-solid fa-square-poll-horizontal"></i> RESULTADOS DE BÚSQUEDA</h4>
+            <button onclick="closeSearchModal()" style="background:none; border:none; color:var(--neon-magenta); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="search-results-content">
+            <!-- Results populated by JS -->
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        {% block content %}{% endblock %}
+
+        <footer style="border-top:1px solid rgba(0, 240, 255, 0.15); padding:20px; text-align:center; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted); background:var(--bg-black); position:relative; margin-top:40px;">
+            <div>GESTIVA SECURITY ENGINE // AUTHORIZED ACCESS ONLY // LOCALHOST RUNTIME</div>
+            <div style="margin-top:5px; color:var(--neon-cyan);">CYBERPUNK SECURITY & OBSERVABILITY CENTER v1.0.0</div>
+        </footer>
+    </main>
+    </div> <!-- Closing gestiva-layout-wrapper -->
+
+    <!-- Global Scripts -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script>
+        // Set active navbar element
+        const path = window.location.pathname;
+        let navId = 'nav-index';
+        if (path === '/technical') navId = 'nav-technical';
+        else if (path === '/executive') navId = 'nav-executive';
+        else if (path === '/topology') navId = 'nav-topology';
+        else if (path === '/inventory') navId = 'nav-inventory';
+        else if (path === '/logs') navId = 'nav-logs';
+        else if (path === '/alerts') navId = 'nav-alerts';
+        else if (path === '/health') navId = 'nav-health';
+        else if (path === '/diagnostics') navId = 'nav-diagnostics';
+        else if (path === '/settings') navId = 'nav-settings';
+        
+        const activeElem = document.getElementById(navId);
+        if (activeElem) {
+            activeElem.classList.add('active');
+        }
+
+        // Cyber Clock
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            document.getElementById('cyber-clock').textContent = `${dateStr} ${timeStr}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Global Search Functionality
+        const searchInput = document.getElementById('global-search-input');
+        const searchModal = document.getElementById('search-modal');
+        const searchResultsContent = document.getElementById('search-results-content');
+        
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value;
+            
+            if (!query || query.trim() === "") {
+                closeSearchModal();
+                return;
+            }
+            
+            searchTimeout = setTimeout(async () => {
+                searchModal.style.display = 'block';
+                searchResultsContent.innerHTML = '<div class="mono" style="color:var(--neon-yellow); text-align:center;"><i class="fa-solid fa-circle-notch fa-spin"></i> BUSCANDO EN BASE DE DATOS...</div>';
+                
+                const results = await globalSearch(query);
+                renderSearchResults(results);
+            }, 300);
+        });
+        
+        function closeSearchModal() {
+            searchModal.style.display = 'none';
+            searchInput.value = '';
+        }
+        
+        function renderSearchResults(results) {
+            let html = '';
+            
+            // Hosts
+            if (results.hosts.length > 0) {
+                html += '<h5 style="color:var(--neon-cyan); margin-top:10px; font-family:var(--font-display);"><i class="fa-solid fa-server"></i> ACTIVOS</h5><ul style="list-style:none; padding-left:10px; margin-bottom:10px;">';
+                results.hosts.forEach(h => {
+                    html += `<li style="margin-bottom:5px;" class="mono"><a href="/inventory?id=${h.id}">${h.hostname} [${h.ip}]</a> - <span class="cyber-badge ${h.status === 'UP' ? 'green' : 'magenta'}">${h.status}</span></li>`;
+                });
+                html += '</ul>';
+            }
+            
+            // Alerts
+            if (results.alerts.length > 0) {
+                html += '<h5 style="color:var(--neon-orange); margin-top:10px; font-family:var(--font-display);"><i class="fa-solid fa-triangle-exclamation"></i> ALERTAS</h5><ul style="list-style:none; padding-left:10px; margin-bottom:10px;">';
+                results.alerts.forEach(a => {
+                    html += `<li style="margin-bottom:5px; border-bottom:1px dashed rgba(255,255,255,0.05); padding-bottom:3px;" class="mono"><span style="color:var(--neon-magenta)">[${a.level}]</span> ${a.source}: ${a.description}</li>`;
+                });
+                html += '</ul>';
+            }
+            
+            // Logs
+            if (results.logs.length > 0) {
+                html += '<h5 style="color:var(--neon-yellow); margin-top:10px; font-family:var(--font-display);"><i class="fa-solid fa-list"></i> REGISTROS</h5><ul style="list-style:none; padding-left:10px; margin-bottom:10px;">';
+                results.logs.forEach(l => {
+                    html += `<li style="margin-bottom:5px; font-size:0.8rem; font-family:var(--font-mono); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">[${l.level}] ${l.message}</li>`;
+                });
+                html += '</ul>';
+            }
+            
+            if (html === '') {
+                html = '<div class="mono" style="color:var(--neon-magenta); text-align:center;"><i class="fa-solid fa-bug"></i> NO SE ENCONTRARON COINCIDENCIAS</div>';
+            }
+            
+            searchResultsContent.innerHTML = html;
+        }
+
+        // Global Device Dimension & DPI Detector Engine
+        function detectViewportAndDPI() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const dpi = window.devicePixelRatio || 1.0;
+            const orientation = width > height ? 'LANDSCAPE' : 'PORTRAIT';
+            const ua = navigator.userAgent;
+            
+            let deviceName = 'Desktop';
+            if (/iPhone|iPod/.test(ua)) deviceName = 'iPhone';
+            else if (/iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) deviceName = 'iPad';
+            else if (/Android/.test(ua)) deviceName = /Mobile/.test(ua) ? 'Android Phone' : 'Android Tablet';
+            else if (width < 768) deviceName = 'Mobile Device';
+            else if (width < 1024) deviceName = 'Tablet';
+            
+            const badgeText = `${deviceName} | ${width}×${height}px @${dpi.toFixed(1)}x DPI`;
+            
+            // Update badge elements
+            const mobileBadge = document.getElementById('mobile-device-telemetry');
+            if (mobileBadge) mobileBadge.textContent = `${deviceName} ${width}×${height} @${dpi.toFixed(1)}x`;
+            
+            const sidebarBadge = document.getElementById('sidebar-dpi-telemetry');
+            if (sidebarBadge) sidebarBadge.textContent = badgeText;
+            
+            // Apply body utility classes for CSS targeting
+            document.body.classList.toggle('device-mobile', width < 768);
+            document.body.classList.toggle('device-tablet', width >= 768 && width < 1024);
+            document.body.classList.toggle('device-high-dpi', dpi >= 2.0);
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('.cyber-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (sidebar) sidebar.classList.toggle('mobile-open');
+            if (backdrop) backdrop.classList.toggle('active');
+        }
+
+        // Initialize detectors on load & viewport changes
+        window.addEventListener('DOMContentLoaded', detectViewportAndDPI);
+        window.addEventListener('resize', detectViewportAndDPI);
+        window.addEventListener('orientationchange', detectViewportAndDPI);
+    </script>
+</body>
+</html>

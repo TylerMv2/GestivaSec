@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-cyan); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">
+            <i class="fa-solid fa-network-wired"></i> MAPA DE TOPOLOGÍA LÓGICA DE RED Y SERVICIOS
+        </h2>
+    </div>
+</div>
+
+<div style="display: flex; gap: 20px; align-items: stretch; flex-wrap: wrap;">
+    <!-- Network Topology Graph Container -->
+    <div style="flex: 1; min-width: 500px;">
+        <div class="cyber-card" id="topology-card" style="height: 620px; position: relative; padding:0; overflow:hidden; resize: both; min-width: 450px; min-height: 400px; max-width: 100%;">
+            <div class="card-header" style="position:absolute; top:20px; left:20px; z-index:100; border:none; background:none;">
+                <span class="card-title"><i class="fa-solid fa-circle-nodes"></i> INFRAESTRUCTURA GESTIVA</span>
+                <span class="cyber-badge cyan">VISTA LOGICA SVG</span>
+            </div>
+            
+            <!-- Graphic canvas -->
+            <div id="topology-canvas" style="width:100%; height:100%; background:var(--bg-black); cursor:grab;">
+                <!-- Dynamically populated via D3 / SVG -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Legend and Details Sidebar -->
+    <div style="width: 320px; flex-shrink: 0;">
+        <div class="cyber-card warning" style="height: 100%; min-height: 620px; display:flex; flex-direction:column;">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-orange);"><i class="fa-solid fa-circle-info"></i> LEYENDA DEL MAPA</span>
+                <span class="cyber-badge orange">LEGEND</span>
+            </div>
+            
+            <div style="flex:1; display:flex; flex-direction:column; gap:15px; font-size:0.92rem;" class="mono">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="display:inline-block; width:15px; height:15px; border-radius:50%; background:#00f0ff; box-shadow:0 0 8px #00f0ff;"></span>
+                    <span>Dispositivo Activo / UP</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="display:inline-block; width:15px; height:15px; border-radius:50%; background:#ff0055; box-shadow:0 0 8px #ff0055;"></span>
+                    <span>Dispositivo Caído / DOWN</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="display:inline-block; width:15px; height:15px; border-radius:50%; background:#8a8a9e;"></span>
+                    <span>Servicio / Puerto Mapeado</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="display:inline-block; width:30px; height:2px; background:rgba(0, 240, 255, 0.4); border-top:1px dashed var(--neon-cyan);"></span>
+                    <span>Trayecto de Tráfico</span>
+                </div>
+                
+                <div style="border-top:1px dashed var(--cyber-border); padding-top:15px; margin-top:10px;">
+                    <h4 style="color:var(--neon-cyan); margin-bottom:10px;">DETALLE DE SELECCIÓN</h4>
+                    <div id="node-detail-panel" style="color:var(--text-muted); font-size:0.85rem; line-height:1.4;">
+                        Haga clic sobre cualquier nodo o servicio del mapa de red para visualizar telemetrías y especificaciones operativas.
+                    </div>
+                </div>
+            </div>
+            
+            <button class="cyber-btn" onclick="initTopology()" style="width:100%; margin-top: auto;"><i class="fa-solid fa-arrows-rotate"></i> RE-AJUSTAR MAPA</button>
+        </div>
+    </div>
+<!-- Diagnostics & Audit Console under the map -->
+<div style="margin-top: 25px; width: 100%;">
+    <div class="cyber-card warning" style="border-color: var(--neon-purple); background: rgba(22, 13, 38, 0.25);">
+        <div class="card-header">
+            <span class="card-title" style="color:var(--neon-purple);"><i class="fa-solid fa-terminal"></i> CONSOLA DE AUDITORÍA Y TRÁFICO KALI (NMAP / TRACEROUTE)</span>
+            <span class="cyber-badge purple">KALI TOOLKIT</span>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 300px;">
+                    <label class="mono" style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">DIRECCIÓN OBJETIVO:</label>
+                    <input type="text" id="diag-target" class="cyber-input mono" value="216.198.79.1" style="flex: 1; margin-bottom: 0; padding: 8px 12px;" placeholder="Dominio o IP">
+                </div>
+                
+                <!-- Target Presets -->
+                <div style="display: flex; gap: 8px;">
+                    <button class="cyber-btn" onclick="setDiagTarget('216.198.79.1')" style="font-size: 0.72rem; padding: 6px 10px;"><i class="fa-solid fa-server"></i> GestivaOne</button>
+                    <button class="cyber-btn" onclick="setDiagTarget('64.29.17.65')" style="font-size: 0.72rem; padding: 6px 10px;"><i class="fa-solid fa-server"></i> Festa</button>
+                    <button class="cyber-btn" onclick="setDiagTarget('64.29.17.67')" style="font-size: 0.72rem; padding: 6px 10px;"><i class="fa-solid fa-cart-shopping"></i> Store</button>
+                </div>
+                
+                <!-- Root option -->
+                <div style="display: flex; align-items: center; gap: 8px;" class="mono">
+                    <input type="checkbox" id="diag-root" style="cursor: pointer; width: 16px; height: 16px;">
+                    <label for="diag-root" style="cursor: pointer; font-size: 0.82rem; color: var(--neon-magenta);"><i class="fa-solid fa-user-shield"></i> Ejecutar como ROOT</label>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="cyber-btn" onclick="runDiagnostic('nmap')" style="background: rgba(199, 125, 255, 0.1); border-color: var(--neon-purple);"><i class="fa-solid fa-fingerprint"></i> ESCANEAR PUERTOS (NMAP)</button>
+                <button class="cyber-btn" onclick="runDiagnostic('traceroute')" style="background: rgba(0, 240, 255, 0.05); border-color: var(--neon-cyan);"><i class="fa-solid fa-route"></i> TRAZAR RUTA (TRACEROUTE)</button>
+                <button class="cyber-btn" onclick="runDiagnostic('ping')" style="background: rgba(112, 240, 0, 0.05); border-color: var(--neon-green);"><i class="fa-solid fa-signal"></i> ICMP PING</button>
+                <button class="cyber-btn" onclick="runDiagnostic('dns')" style="background: rgba(255, 158, 0, 0.05); border-color: var(--neon-orange);"><i class="fa-solid fa-network-wired"></i> RESOLVER DNS</button>
+            </div>
+            
+            <!-- Output Console Window -->
+            <div style="position: relative;">
+                <div class="mono" style="font-size: 0.75rem; color: var(--text-muted); padding: 5px 10px; background: rgba(255, 255, 255, 0.03); border-radius: 6px 6px 0 0; border: 1px solid var(--border-soft); border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="fa-solid fa-circle"></i> SALIDA DEL PROCESO</span>
+                    <span id="diag-status" style="color:var(--neon-green);">TERMINAL LISTO</span>
+                </div>
+                <pre id="diag-console" class="mono" style="margin:0; padding:15px; height:250px; overflow-y:auto; background:#05020c; border:1px solid var(--border-soft); border-radius:0 0 8px 8px; color:#39ff14; font-size:0.85rem; line-height:1.4; text-shadow: 0 0 5px rgba(57, 255, 20, 0.35); white-space: pre-wrap; word-break: break-all;">[+] Consola de seguridad iniciada. Ingrese un objetivo y seleccione una acción para auditar...</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- D3 or SVG dynamic rendering -->
+<script src="/static/js/topology.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        initTopology();
+    });
+
+    function setDiagTarget(target) {
+        document.getElementById('diag-target').value = target;
+    }
+
+    async function runDiagnostic(type) {
+        const target = document.getElementById('diag-target').value.trim();
+        const runAsRoot = document.getElementById('diag-root').checked;
+        const consoleEl = document.getElementById('diag-console');
+        const statusEl = document.getElementById('diag-status');
+        
+        if (!target) {
+            alert("Por favor ingrese un objetivo (IP o Dominio)");
+            return;
+        }
+        
+        consoleEl.textContent = `[+] Ejecutando acción diagnóstica: ${type.toUpperCase()} contra ${target}...\n[+] Por favor espere, esta acción puede demorar hasta 15 segundos...\n`;
+        statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color:var(--neon-orange);"></i> PROCESANDO...';
+        statusEl.style.color = 'var(--neon-orange)';
+        
+        let url = '';
+        let body = {};
+        
+        if (type === 'ping') {
+            url = '/api/diagnostics/ping';
+            body = { target: target };
+        } else if (type === 'traceroute') {
+            url = '/api/diagnostics/traceroute';
+            body = { target: target };
+        } else if (type === 'dns') {
+            url = '/api/diagnostics/dns';
+            body = { target: target };
+        } else if (type === 'nmap') {
+            url = '/api/diagnostics/terminal';
+            body = { command: 'nmap -F ' + target, run_as_root: runAsRoot };
+        }
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                if (result.stdout) {
+                    consoleEl.textContent = result.stdout;
+                }
+                if (result.stderr) {
+                    consoleEl.textContent += "\n[!] ERRORES DEL PROCESO:\n" + result.stderr;
+                }
+                if (!result.stdout && !result.stderr) {
+                    consoleEl.textContent = "[+] Acción completada sin salida de texto.";
+                }
+                statusEl.textContent = `EXIT CODE: ${result.exit_code || 0}`;
+                statusEl.style.color = result.exit_code === 0 ? 'var(--neon-green)' : 'var(--neon-magenta)';
+            } else {
+                consoleEl.textContent = `[!] Error de API (${response.status}): ${result.detail || 'Fallo de ejecución'}`;
+                statusEl.textContent = 'FALLO';
+                statusEl.style.color = 'var(--neon-magenta)';
+            }
+        } catch (error) {
+            consoleEl.textContent = `[!] Error de conexión: ${error.message}`;
+            statusEl.textContent = 'ERROR DE RED';
+            statusEl.style.color = 'var(--neon-magenta)';
+        }
+    }
+</script>
+{% endblock %}

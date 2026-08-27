@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-magenta); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-magenta); text-shadow: 0 0 10px rgba(255, 0, 85, 0.4);">
+            <i class="fa-solid fa-briefcase"></i> RENDIMIENTO Y CONTROL SOC EJECUTIVO
+        </h2>
+    </div>
+</div>
+
+<!-- Simple KPIs Row -->
+<div class="cyber-grid">
+    <div class="col-4">
+        <div class="cyber-card success">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-green);"><i class="fa-solid fa-square-poll-vertical"></i> SLAS OPERATIVOS</span>
+                <span class="cyber-badge green">KPI</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value">99.98</span>
+                <span class="stat-unit">%</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.85rem;" class="mono">Objetivo: 99.9% // Margen: +0.08%</p>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-bolt"></i> TIEMPO DE RESPUESTA PROMEDIO</span>
+                <span class="cyber-badge cyan">LATENCIA</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value" id="kpi-avg-resp">0</span>
+                <span class="stat-unit">ms</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.85rem;" class="mono">Latencia de red global monitoreada</p>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="cyber-card critical">
+            <div class="card-header">
+                <span class="card-title critical"><i class="fa-solid fa-skull-crossbones"></i> INCIDENTES ACTIVOS</span>
+                <span class="cyber-badge magenta">SOC RISKS</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value" id="kpi-incidents-count" style="color:var(--neon-magenta);">0</span>
+                <span class="stat-unit">ACTIVOS</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.85rem;" class="mono">Requieren atención operativa inmediata</p>
+        </div>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Executive Trends Chart -->
+    <div class="col-8">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-chart-area"></i> HISTORIAL DE DISPONIBILIDAD (24H)</span>
+                <span class="cyber-badge cyan">TENDENCIAS</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="executiveTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDF / CSV Report Exporter -->
+    <div class="col-4">
+        <div class="cyber-card warning">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-orange);"><i class="fa-solid fa-file-export"></i> CENTRO DE EXPORTACIÓN</span>
+                <span class="cyber-badge orange">EXPORTS</span>
+            </div>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:15px; line-height:1.4;">
+                Descargue instantáneamente copias de seguridad de auditoría y análisis de incidentes de observabilidad operacional en formatos CSV o JSON.
+            </p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; gap:10px;">
+                    <button class="cyber-btn" onclick="exportData('hosts', 'csv')" style="flex:1;"><i class="fa-solid fa-download"></i> Activos (CSV)</button>
+                    <button class="cyber-btn" onclick="exportData('hosts', 'json')" style="flex:1;"><i class="fa-solid fa-file-code"></i> Activos (JSON)</button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="cyber-btn" onclick="exportData('alerts', 'csv')" style="flex:1;"><i class="fa-solid fa-download"></i> Alertas (CSV)</button>
+                    <button class="cyber-btn" onclick="exportData('alerts', 'json')" style="flex:1;"><i class="fa-solid fa-file-code"></i> Alertas (JSON)</button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="cyber-btn" onclick="exportData('traffic', 'csv')" style="flex:1;"><i class="fa-solid fa-download"></i> Tráfico (CSV)</button>
+                    <button class="cyber-btn" onclick="exportData('traffic', 'json')" style="flex:1;"><i class="fa-solid fa-file-code"></i> Tráfico (JSON)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Active Critical Incidents -->
+    <div class="col-12">
+        <div class="cyber-card critical">
+            <div class="card-header">
+                <span class="card-title critical"><i class="fa-solid fa-triangle-exclamation"></i> BITÁCORA DE INCIDENTES CRÍTICOS</span>
+                <span class="cyber-badge magenta">SOC CRITICALS</span>
+            </div>
+            <div class="cyber-table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp</th>
+                            <th>Origen</th>
+                            <th>Descripción</th>
+                            <th>Acción Directiva</th>
+                        </tr>
+                    </thead>
+                    <tbody id="executive-incidents-body">
+                        <tr>
+                            <td colspan="5" style="text-align:center;" class="mono text-muted">Sin incidentes críticos registrados.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Executive Scripts -->
+<script>
+    let execChartInstance = null;
+
+    async function loadExecutiveData() {
+        try {
+            const dashboard = await API.getDashboard();
+            const network = await API.getNetwork();
+            
+            // 1. Update stats
+            document.getElementById('kpi-avg-resp').textContent = network.avg_latency_ms.toFixed(1);
+            
+            const criticalAlerts = dashboard.recent_alerts.filter(a => a.level === 'Critical');
+            document.getElementById('kpi-incidents-count').textContent = criticalAlerts.length;
+
+            // 2. Render Incident List
+            const incidentsBody = document.getElementById('executive-incidents-body');
+            incidentsBody.innerHTML = '';
+            
+            if (criticalAlerts.length > 0) {
+                criticalAlerts.forEach(a => {
+                    incidentsBody.innerHTML += `
+                        <tr class="mono">
+                            <td>#${a.id}</td>
+                            <td>${new Date(a.timestamp).toLocaleString()}</td>
+                            <td style="color:var(--neon-magenta); font-weight:700;">${a.source}</td>
+                            <td>${a.description}</td>
+                            <td>
+                                <button class="cyber-btn magenta" onclick="ackIncident(${a.id})" style="font-size:0.75rem; padding:4px 10px;"><i class="fa-solid fa-shield-virus"></i> MITIGAR</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                incidentsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center;" class="mono text-muted">Todos los sistemas operativos autorizados operan sin incidentes de seguridad.</td>
+                    </tr>
+                `;
+            }
+
+            // 3. Render Trend Chart
+            renderTrendChart();
+
+        } catch (e) {
+            console.error("Failed to load executive parameters:", e);
+        }
+    }
+
+    async function ackIncident(id) {
+        await API.acknowledgeAlert(id);
+        loadExecutiveData();
+    }
+
+    function exportData(table, format) {
+        window.open(`/api/export/${format}?table=${table}`, '_blank');
+    }
+
+    function renderTrendChart() {
+        const ctx = document.getElementById('executiveTrendChart').getContext('2d');
+        
+        // Generate mock timeline availability percentages for the last 24h
+        const labels = Array.from({length: 12}, (_, i) => `${(i*2)}:00`);
+        const data = [100, 100, 100, 100, 99.8, 100, 100, 100, 99.7, 100, 100, 100];
+
+        if (execChartInstance) {
+            return;
+        }
+
+        execChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'SLA de Disponibilidad (%)',
+                    data: data,
+                    borderColor: '#ff0055',
+                    backgroundColor: 'rgba(255, 0, 85, 0.05)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ff0055',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        min: 99,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#8a8a9e', font: { family: 'Share Tech Mono' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#8a8a9e', font: { family: 'Share Tech Mono' } }
+                    }
+                }
+            }
+        });
+    }
+
+    setInterval(loadExecutiveData, 3000);
+    loadExecutiveData();
+</script>
+{% endblock %}

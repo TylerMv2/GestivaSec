@@ -1,0 +1,12 @@
+# GESTIVA SECURITY — RUNTIME HISTORY ENGINE: SPRINT HISTORY
+
+sprint_history:
+  - id: "SPRINT-01"
+    focus: "Foundation IAM (Login, Orgs, Users)"
+    completed_slices: ["IAM-LOGIN", "IAM-ORGS", "IAM-USERS"]
+    status: "CLOSED"
+
+  - id: "SPRINT-02"
+    focus: "IAM RBAC & Asset Inventory (Roles, Perms, OAuth, Assets)"
+    completed_slices: ["IAM-ROLES", "IAM-PERMS", "IAM-OAUTH", "AST-INVENTORY", "MON-SYNTHETIC"]
+    status: "CLOSED"

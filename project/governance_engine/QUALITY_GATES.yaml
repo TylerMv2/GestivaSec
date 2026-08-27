@@ -1,0 +1,8 @@
+# GESTIVA SECURITY — GOVERNANCE ENGINE: QUALITY GATES
+
+quality_gates:
+  test_pass_rate_minimum: 100
+  dead_code_allowed: 0
+  placeholders_allowed: 0
+  unverified_assumptions_allowed: 0
+  documentation_traceability_required: true

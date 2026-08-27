@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  gestiva-observability:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: gestiva_noc_soc
+    ports:
+      - "8000:8000"
+    volumes:
+      - db_data:/app/backend/database
+      - log_data:/app/logs
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DB_PATH=backend/database/gestiva_obs.db
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  log_data:

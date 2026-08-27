@@ -1,0 +1,7 @@
+# GESTIVA SECURITY — DEPENDENCY ENGINE: DOMAIN DEPENDENCIES
+
+domain_dependencies:
+  DOM-AST:
+    depends_on: ["DOM-IAM"]
+  DOM-MON:
+    depends_on: ["DOM-AST"]

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestiva Security — Corporate Login Gate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/tokens.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body style="background: #050505; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-image: radial-gradient(circle at 50% 30%, rgba(123, 97, 255, 0.12) 0%, transparent 60%);">
+    
+    <div class="glass" style="width: 100%; max-width: 440px; padding: 2.5rem; border: 1px solid #2A2438; border-radius: 16px; box-shadow: 0 0 50px rgba(123, 97, 255, 0.25);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 800; color: #ffffff; letter-spacing: -0.03em;">Gestiva<span style="color: #7B61FF;">Sec</span></h1>
+            <span style="font-size: 0.7rem; color: #A0A0AB; letter-spacing: 0.12em; text-transform: uppercase;">GESTIVAONE ENTERPRISE SOC PLATFORM</span>
+        </div>
+
+        <div id="auth-wall-message" style="background: rgba(123, 97, 255, 0.1); border: 1px solid rgba(123, 97, 255, 0.3); color: #FFFFFF; font-size: 0.85rem; padding: 0.85rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+            Autenticación Requerida: Inicie sesión con su credencial SOC corporativa.
+        </div>
+
+        <div id="auth-wall-error" style="display: none; background: rgba(255, 46, 76, 0.15); border: 1px solid #FF2E4C; color: #FF2E4C; font-size: 0.85rem; padding: 0.85rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;"></div>
+
+        <form id="form-standalone-login" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div>
+                <label style="font-size: 0.8rem; color: #A0A0AB; display: block; margin-bottom: 0.4rem;">Correo Corporativo</label>
+                <input type="email" id="login-email" value="admin@gestivaone.com" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.6); border: 1px solid #2A2438; border-radius: 8px; color: #ffffff; font-size: 0.95rem; outline: none;">
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; color: #A0A0AB; display: block; margin-bottom: 0.4rem;">Contraseña de Seguridad</label>
+                <input type="password" id="login-password" value="GestivaSec2026!" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.6); border: 1px solid #2A2438; border-radius: 8px; color: #ffffff; font-size: 0.95rem; outline: none;">
+            </div>
+            <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width: 100%; padding: 0.9rem; margin-top: 0.5rem; font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, #7B61FF, #9D4EDD); color: #FFFFFF; border: none; border-radius: 8px; cursor: pointer;">
+                Ingresar a GestivaSec
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("form-standalone-login").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value;
+            const btn = document.getElementById("btn-login-submit");
+            const errEl = document.getElementById("auth-wall-error");
+            errEl.style.display = "none";
+
+            btn.disabled = true;
+            btn.textContent = "Verificando...";
+
+            try {
+                const resp = await fetch("/api/v1/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || "Error al autenticar.");
+
+                localStorage.setItem("gestivasec_token", data.access_token);
+                window.location.href = "/";
+            } catch (err) {
+                errEl.textContent = err.message;
+                errEl.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Ingresar a GestivaSec";
+            }
+        });
+    </script>
+</body>
+</html>

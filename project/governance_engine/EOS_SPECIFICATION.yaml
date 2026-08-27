@@ -1,0 +1,14 @@
+# GESTIVA SECURITY — GOVERNANCE ENGINE: EOS SPECIFICATION
+
+eos_specification:
+  version: "1.0"
+  operating_mode: "MATURITY_LEVEL_GATED_ENGINEERING"
+  single_document_rule:
+    max_in_progress_documents: 1
+    enforced: true
+  evidence_based_rule:
+    required_fields: ["Evidence", "Confidence", "Audit Scope"]
+    enforced: true
+  conversational_language_rule:
+    status: "PROHIBITED"
+    enforced: true

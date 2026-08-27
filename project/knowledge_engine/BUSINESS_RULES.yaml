@@ -1,0 +1,27 @@
+# GESTIVA SECURITY — KNOWLEDGE ENGINE: BUSINESS RULES
+
+business_rules:
+  - id: "BR-0001"
+    name: "Informe RCA Obligatorio para Cierre de Incidentes"
+    description: "Ningún incidente P1/P2 puede ser cerrado sin un informe Root Cause Analysis verificado."
+    enforced: true
+
+  - id: "BR-0002"
+    name: "Verificación de Correo de Propietario de Activos"
+    description: "Todo activo registrado debe poseer un correo electrónico válido de responsable."
+    enforced: true
+
+  - id: "BR-0003"
+    name: "Umbral de Fallas Sintéticas Consecutivas"
+    description: "3 fallas sintéticas consecutivas desencadenan una alerta P1 Crítica."
+    enforced: true
+
+  - id: "BR-0004"
+    name: "Aislamiento Estricto Multi-Tenant por Organización"
+    description: "Las consultas de datos están restringidas por la cabecera X-Organization-ID."
+    enforced: true
+
+  - id: "BR-0005"
+    name: "Firma JWT y Blacklist de Tokens Invalidados"
+    description: "Toda petición autenticada requiere JWT válido no incluido en la lista negra."
+    enforced: true

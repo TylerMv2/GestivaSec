@@ -1,0 +1,13 @@
+# GESTIVA SECURITY — REGISTRY ENGINE: ARTIFACT REGISTRY
+
+artifacts:
+  - id: "SPEC-KERNEL-MASTER-001"
+    title: "Master Enterprise Architecture Specification — Project Kernel"
+    path: "PROJECT_KERNEL_ARCHITECTURE.md"
+    status: "LOCKED"
+    owner: "Architecture Studio"
+    quality_score: 100
+    traceability:
+      upstream: ["EOS V1.0", "ARB REVIEW 0004"]
+      downstream: ["project/PROJECT_MANIFEST.yaml", "project/registry_engine/"]
+    arb_status: "APPROVED"

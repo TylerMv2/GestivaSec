@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-purple); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-purple); text-shadow: 0 0 10px rgba(199, 125, 255, 0.4);">
+            <i class="fa-solid fa-skull"></i> INTEGRACIÓN KALI TOOLKIT - DIAGNÓSTICOS EN TIEMPO REAL
+        </h2>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Active Tools Launch Controller -->
+    <div class="col-4">
+        <div class="cyber-card warning">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-orange);"><i class="fa-solid fa-rocket"></i> LANZAR APLICACIÓN DE ESCRITORIO</span>
+                <span class="cyber-badge orange">KALI DESKTOP</span>
+            </div>
+            <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.5; margin-bottom:15px;">
+                Inicie herramientas GUI autorizadas de interceptación y auditoría directamente en el entorno de escritorio de Kali Linux.
+            </p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <button class="cyber-btn" onclick="launchLocalTool('wireshark')"><i class="fa-solid fa-ethernet"></i> Abrir Wireshark</button>
+                <button class="cyber-btn magenta" onclick="launchLocalTool('burpsuite')"><i class="fa-solid fa-shield-halved"></i> Abrir Burp Suite</button>
+            </div>
+        </div>
+        
+        <!-- Diagnostic Action Commands Form -->
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-terminal"></i> DIAGNÓSTICOS DE BAJO NIVEL</span>
+                <span class="cyber-badge cyan">UTILITIES</span>
+            </div>
+            
+            <label class="mono" style="color:var(--neon-purple); font-size:0.85rem;">DIRECCIÓN TARGET (HOST / IP)</label>
+            <input type="text" class="cyber-input mono" id="diag-target" value="216.198.79.1">
+            
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
+                <button class="cyber-btn" onclick="executeDiagnostic('ping')"><i class="fa-solid fa-heart-pulse"></i> Ejecutar ICMP Ping</button>
+                <button class="cyber-btn" onclick="executeDiagnostic('traceroute')"><i class="fa-solid fa-route"></i> Ejecutar Traceroute</button>
+                <button class="cyber-btn" onclick="executeDiagnostic('dns')"><i class="fa-solid fa-magnifying-glass"></i> DNS Record Lookup</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Interactive Diagnostic Console Output -->
+    <div class="col-8">
+        <div class="cyber-card" style="display:flex; flex-direction:column; min-height:510px;">
+            <div class="card-header">
+                <span class="card-title" id="terminal-header-title"><i class="fa-solid fa-terminal"></i> KALI WEB INTERACTIVE CONSOLE</span>
+                <span class="cyber-badge cyan" id="terminal-status-badge">READY</span>
+            </div>
+            
+            <!-- Terminal console emulator look -->
+            <div id="diagnostics-terminal-log" class="mono" style="flex:1; background:#040208; border:1px solid rgba(255,255,255,0.05); padding:15px; font-size:0.85rem; color:#00ffd5; overflow-y:auto; font-family:var(--font-mono); border-radius:12px; margin-bottom:15px; white-space:pre-wrap; max-height: 400px; min-height: 300px;">--- CONEXIÓN CON TERMINAL KALI LINUX LISTA ---
+--- COMANDOS PROHIBIDOS: rm, dd, mkfs, reboot ---
+$ _</div>
+            
+            <!-- Terminal interactive prompt command entry -->
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span class="mono" style="color:var(--neon-purple);">$</span>
+                <input type="text" class="cyber-input mono" id="terminal-cmd-input" onkeyup="checkCmdSubmit(event)" style="margin-bottom:0; flex:1;" placeholder="Escriba comando (ej: uname -a o ip a)...">
+                
+                <div style="display:flex; align-items:center; gap:5px; margin-right:5px;">
+                    <input type="checkbox" id="run-root-check" style="cursor:pointer; width:16px; height:16px;">
+                    <label for="run-root-check" class="mono" style="font-size:0.8rem; cursor:pointer; color:var(--neon-magenta); font-weight:bold;">ROOT</label>
+                </div>
+                
+                <button class="cyber-btn" onclick="submitTerminalCommand()"><i class="fa-solid fa-play"></i> RUN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diagnostics Scripts -->
+<script>
+    const termLog = document.getElementById('diagnostics-terminal-log');
+
+    // Run local GUI desktop tools (Wireshark / Burp Suite)
+    async function launchLocalTool(name) {
+        termLog.innerHTML += `\n$ launch_gui_tool --name=${name}\n`;
+        termLog.scrollTop = termLog.scrollHeight;
+        
+        try {
+            const res = await fetch('/api/diagnostics/launch_tool', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tool_name: name })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                termLog.innerHTML += `<span style="color:#06d6a0;">[+] ${data.message}</span>\n`;
+            } else {
+                termLog.innerHTML += `<span style="color:var(--neon-magenta);">[-] Error: ${data.detail}</span>\n`;
+            }
+        } catch (e) {
+            termLog.innerHTML += `<span style="color:var(--neon-magenta);">[-] Connection failed: ${e.message}</span>\n`;
+        }
+        termLog.scrollTop = termLog.scrollHeight;
+    }
+
+    // Run Diagnostics (Ping, Traceroute, DNS)
+    async function executeDiagnostic(type) {
+        const target = document.getElementById('diag-target').value;
+        if (!target) return;
+        
+        termLog.innerHTML += `\n$ ${type} ${target}\n`;
+        termLog.scrollTop = termLog.scrollHeight;
+        
+        try {
+            const res = await fetch(`/api/diagnostics/${type}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: target })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                if (data.stdout) termLog.innerHTML += data.stdout + '\n';
+                if (data.stderr) termLog.innerHTML += `<span style="color:var(--neon-orange);">${data.stderr}</span>\n`;
+            } else {
+                termLog.innerHTML += `<span style="color:var(--neon-magenta);">[-] Error: ${data.detail}</span>\n`;
+            }
+        } catch (e) {
+            termLog.innerHTML += `<span style="color:var(--neon-magenta);">[-] Connection failed: ${e.message}</span>\n`;
+        }
+        termLog.scrollTop = termLog.scrollHeight;
+    }
+
+    // Run interactive bash console inputs
+    function checkCmdSubmit(e) {
+        if (e.key === 'Enter') {
+            submitTerminalCommand();
+        }
+    }
+
+    async function submitTerminalCommand() {
+        const input = document.getElementById('terminal-cmd-input');
+        const cmd = input.value;
+        if (!cmd) return;
+        
+        const runAsRoot = document.getElementById('run-root-check').checked;
+        const prefix = runAsRoot ? "sudo " : "";
+        
+        termLog.innerHTML += `\n$ ${prefix}${cmd}\n`;
+        termLog.scrollTop = termLog.scrollHeight;
+        
+        input.value = ''; // Clear prompt
+        
+        try {
+            const res = await fetch('/api/diagnostics/terminal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command: cmd, run_as_root: runAsRoot })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                if (data.stdout) termLog.innerHTML += data.stdout;
+                if (data.stderr) termLog.innerHTML += `<span style="color:var(--neon-orange);">${data.stderr}</span>\n`;
+                termLog.innerHTML += `\nProcess exited with status ${data.exit_code}\n`;
+            } else {
+                termLog.innerHTML += `<span style="color:var(--neon-magenta);">[-] Error: ${data.detail}</span>\n`;
+            }
+        } catch (e) {
+            termLog.innerHTML += `<span style="color:var(--neon-magenta);">[-] Connection failed: ${e.message}</span>\n`;
+        }
+        termLog.scrollTop = termLog.scrollHeight;
+    }
+</script>
+{% endblock %}

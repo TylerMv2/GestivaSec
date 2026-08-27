@@ -1,0 +1,7 @@
+# GESTIVA SECURITY — RUNTIME ENGINE: CURRENT SPRINT
+
+current_sprint:
+  sprint_id: "SPRINT-03"
+  active_slice: "IAM-SESSIONS"
+  active_slice_status: "READY"
+  focus: "Implementation of Project Kernel Structure & Session Blacklist Engine"

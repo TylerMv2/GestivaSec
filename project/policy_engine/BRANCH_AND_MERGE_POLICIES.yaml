@@ -1,0 +1,6 @@
+# GESTIVA SECURITY — POLICY ENGINE: BRANCH AND MERGE POLICIES
+
+branch_policies:
+  main_branch_protection: true
+  require_arb_approval_for_merge: true
+  require_100_percent_test_pass: true

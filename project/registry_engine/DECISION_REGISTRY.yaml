@@ -1,0 +1,22 @@
+# GESTIVA SECURITY — REGISTRY ENGINE: DECISION REGISTRY
+
+decisions:
+  - id: "DEC-0001"
+    topic: "Adopt Project Genesis EOS V1.0"
+    arb_status: "APPROVED"
+    date: "2026-07-26"
+
+  - id: "DEC-0002"
+    topic: "Adopt Project Kernel Master Architecture"
+    arb_status: "APPROVED"
+    date: "2026-07-26"
+
+  - id: "DEC-0003"
+    topic: "Approve Project Kernel Physical Implementation (PROJECT GENESIS CONCLUDED)"
+    arb_status: "APPROVED"
+    date: "2026-07-26"
+
+  - id: "DEC-0004"
+    topic: "Approve IAM-SESSIONS Slice (Slice 007)"
+    arb_status: "APPROVED"
+    date: "2026-07-26"

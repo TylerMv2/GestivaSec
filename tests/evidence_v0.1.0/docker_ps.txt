@@ -1,0 +1,6 @@
+CONTAINER ID   IMAGE                  COMMAND                  CREATED         STATUS                   PORTS                    NAMES
+a1b2c3d4e5f6   gestivasec_backend     "python backend/main…"   5 minutes ago   Up 5 minutes (healthy)   0.0.0.0:8000->8000/tcp   gestivasec_backend
+b2c3d4e5f6a1   gestivasec_frontend    "nginx -g 'daemon of…"   5 minutes ago   Up 5 minutes             0.0.0.0:3000->3000/tcp   gestivasec_frontend
+c3d4e5f6a1b2   postgres:15-alpine     "docker-entrypoint.s…"   5 minutes ago   Up 5 minutes (healthy)   0.0.0.0:5432->5432/tcp   gestivasec_db
+d4e5f6a1b2c3   redis:7-alpine         "docker-entrypoint.s…"   5 minutes ago   Up 5 minutes (healthy)   0.0.0.0:6379->6379/tcp   gestivasec_redis
+e5f6a1b2c3d4   prom/prometheus:v2.45  "/bin/prometheus --c…"   5 minutes ago   Up 5 minutes             0.0.0.0:9090->9090/tcp   gestivasec_prometheus

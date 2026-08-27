@@ -1,0 +1,6 @@
+# GESTIVA SECURITY — RUNTIME ENGINE: CURRENT INCIDENT
+
+current_incident:
+  active_incidents_count: 0
+  active_p1_count: 0
+  status: "NORMAL_OPERATIONS"

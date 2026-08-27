@@ -1,0 +1,6 @@
+# GESTIVA SECURITY — METRICS ENGINE: TELEMETRY METRICS
+
+telemetry:
+  active_tenants: 2
+  monitored_assets: 3
+  probes_executed_24h: 1440

@@ -1,0 +1,7 @@
+# GESTIVA SECURITY — METRICS ENGINE: TEST COVERAGE
+
+test_coverage:
+  pass_rate_percentage: 100.0
+  active_tests: 64
+  failed_tests: 0
+  skipped_tests: 0

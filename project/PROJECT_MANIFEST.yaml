@@ -1,0 +1,34 @@
+# GESTIVA SECURITY (GESTIVASEC V1) — PROJECT MANIFEST
+# Primary Engineering Descriptor (Agnostic of Product Stack)
+
+project:
+  name: "Gestiva Security (GestivaSec V1)"
+  version: "0.1.0"
+  status: "LEVEL_2_PRODUCT_IN_REVIEW"
+  architecture_styles:
+    - "Domain-Driven Design (DDD)"
+    - "Hexagonal Architecture (Ports and Adapters)"
+    - "Modular Monolith Engine"
+  mission_paradigm: "Continuous Passive Security Observability for GestivaOne"
+  
+kernel:
+  version: "1.0.0"
+  schema_version: "1.0"
+  compatibility:
+    minimum_schema_version: "1.0"
+  operating_system: "Project Genesis EOS V1.0"
+  active_state: "ENFORCED"
+
+owners:
+  architecture_studio: "Enterprise Product & Architecture Studio"
+  review_board: "Architecture Review Board (ARB)"
+  security_authority: "Principal Security Architect"
+
+repositories:
+  root: "/home/sh4d0w/Projects/gestiva_observability"
+  level_1_engineering: "project/"
+  level_2_product:
+    backend: "backend/"
+    frontend: "frontend/"
+    tests: "tests/"
+    docs: "docs/"

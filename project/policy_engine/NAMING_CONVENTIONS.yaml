@@ -1,0 +1,8 @@
+# GESTIVA SECURITY — POLICY ENGINE: NAMING CONVENTIONS
+
+naming_conventions:
+  capabilities: "CAP-{XX}"
+  slices: "{CAP_PREFIX}-{FEATURE_NAME}"
+  tests: "test_slice_{XXX}_{name}.py"
+  adrs: "{XXXX}-{title-slug}.md"
+  rfcs: "RFC-{XXXX}-{title-slug}.md"

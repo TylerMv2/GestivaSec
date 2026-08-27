@@ -1,0 +1,12 @@
+# GESTIVA SECURITY — REGISTRY ENGINE: ADR REGISTRY
+
+adr_count: 17
+adrs:
+  - id: "ADR-0015"
+    title: "Adoption of Hexagonal Ports and Adapters Architecture"
+    path: "docs/adr/0015-adoption-of-hexagonal-ports-and-adapters-architecture.md"
+    arb_status: "APPROVED"
+  - id: "ADR-0017"
+    title: "Adoption of Multi-Tenant Organization Boundary Strategy"
+    path: "docs/adr/0017-adoption-of-multi-tenant-organization-boundary-strategy.md"
+    arb_status: "APPROVED"

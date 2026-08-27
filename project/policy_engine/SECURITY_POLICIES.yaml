@@ -1,0 +1,7 @@
+# GESTIVA SECURITY — POLICY ENGINE: SECURITY POLICIES
+
+security_policies:
+  multi_tenant_isolation_br_04: "ENFORCED"
+  bcrypt_password_hashing: "ENFORCED"
+  jwt_signed_tokens: "ENFORCED"
+  zero_trust_kernel_access: "ENFORCED"

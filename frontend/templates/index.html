@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Cyber Status Alert Banner -->
+<div class="cyber-grid">
+    <div class="col-12">
+        <div class="cyber-card" id="status-banner" style="background: rgba(0, 240, 255, 0.04); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--neon-cyan);">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div id="status-icon" style="font-size: 2.2rem; color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan);"><i class="fa-solid fa-shield-halved"></i></div>
+                <div>
+                    <h2 style="font-family: var(--font-display); letter-spacing: 1px; font-size: 1.5rem;" id="status-title">MONITOREO OPERATIVO ACTIVO</h2>
+                    <p style="font-family: var(--font-mono); color: var(--text-muted); font-size: 0.85rem;" id="status-subtitle">DISPOSITIVOS AUTORIZADOS BAJO OBSERVABILIDAD PASIVA</p>
+                </div>
+            </div>
+            <div style="text-align: right;" class="mono">
+                <span style="color: var(--neon-cyan);">HOSTS UP:</span> <span id="hosts-ratio">0/0</span><br>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">UPTIME: 100% ONLINE</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Primary NOC/SOC Metrics Grid -->
+<div class="cyber-grid">
+    <!-- Stat 1 -->
+    <div class="col-3">
+        <div class="cyber-card success">
+            <div class="card-header">
+                <span class="card-title" style="color: var(--neon-green);"><i class="fa-solid fa-check-double"></i> DISPONIBILIDAD</span>
+                <span class="cyber-badge green">KPI</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value" id="kpi-availability">100</span>
+                <span class="stat-unit">%</span>
+            </div>
+            <div class="cyber-progress">
+                <div class="cyber-progress-fill green" id="kpi-availability-progress" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stat 2 -->
+    <div class="col-3">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-server"></i> ACTIVOS</span>
+                <span class="cyber-badge cyan">HOSTS</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value" id="kpi-hosts">0</span>
+                <span class="stat-unit">SISTEMAS</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.85rem;" class="mono">Red Interna: <span id="kpi-internal-hosts">0</span> | Externa: <span id="kpi-external-hosts">0</span></p>
+        </div>
+    </div>
+    
+    <!-- Stat 3 -->
+    <div class="col-3">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-circle-nodes"></i> SERVICIOS</span>
+                <span class="cyber-badge cyan">PORTS</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value" id="kpi-services">0</span>
+                <span class="stat-unit">ACTIVOS</span>
+            </div>
+            <div class="cyber-progress">
+                <div class="cyber-progress-fill" id="kpi-services-progress" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stat 4 -->
+    <div class="col-3">
+        <div class="cyber-card critical" id="alert-card">
+            <div class="card-header">
+                <span class="card-title critical"><i class="fa-solid fa-triangle-exclamation"></i> ALERTAS</span>
+                <span class="cyber-badge magenta">SOC</span>
+            </div>
+            <div class="stat-container">
+                <span class="stat-value" id="kpi-alerts" style="color: var(--neon-magenta); text-shadow: 0 0 10px var(--neon-magenta);">0</span>
+                <span class="stat-unit">ACTIVAS</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.85rem;" class="mono">Critica: <span id="crit-count" style="color: var(--neon-magenta);">0</span> | Advertencia: <span id="warn-count" style="color: var(--neon-orange);">0</span></p>
+        </div>
+    </div>
+</div>
+
+<!-- Resource Analytics & Traffic Visualizer -->
+<div class="cyber-grid">
+    <!-- Local Resource Telemetry Chart -->
+    <div class="col-6">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-chart-line"></i> TELEMETRÍA LOCALHOST</span>
+                <span class="cyber-badge cyan">NOC</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="localhostChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Traffic Protocol Distribution -->
+    <div class="col-6">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-network-wired"></i> PROTOCOLOS DETECTADOS</span>
+                <span class="cyber-badge cyan">TRAFICO</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="protocolChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Active Alerts Manager -->
+    <div class="col-8">
+        <div class="cyber-card critical">
+            <div class="card-header">
+                <span class="card-title critical"><i class="fa-solid fa-circle-exclamation"></i> ALERTAS ACTIVAS RECIENTES</span>
+                <span class="cyber-badge magenta">ALERT BOARD</span>
+            </div>
+            <div class="cyber-table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Nivel</th>
+                            <th>Origen</th>
+                            <th>Descripción</th>
+                            <th>Hora</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alerts-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center;" class="mono text-muted">Sin alertas activas detectadas.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Event Timeline -->
+    <div class="col-4">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-timeline"></i> LÍNEA TEMPORAL NOC</span>
+                <span class="cyber-badge cyan">TIMELINE</span>
+            </div>
+            <div class="cyber-timeline" id="system-timeline">
+                <div class="timeline-item success">
+                    <div class="timeline-time">Hace unos instantes</div>
+                    <div class="timeline-title">Monitor Gestiva Iniciado</div>
+                    <div class="timeline-desc">Monitoreo de red y colectores asíncronos activos.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Scripts -->
+<script>
+    let localhostChartInstance = null;
+    let protocolChartInstance = null;
+
+    // Fetch and render dashboard
+    async function loadDashboard() {
+        try {
+            const data = await API.getDashboard();
+            const netData = await API.getNetwork();
+            const trafficData = await API.getTraffic(10);
+            
+            // 1. Update banners and KPI stats
+            document.getElementById('hosts-ratio').textContent = `${data.up_hosts}/${data.total_hosts}`;
+            document.getElementById('kpi-availability').textContent = data.availability_percent;
+            document.getElementById('kpi-availability-progress').style.width = `${data.availability_percent}%`;
+            document.getElementById('kpi-hosts').textContent = data.total_hosts;
+            document.getElementById('kpi-services').textContent = data.active_services;
+            document.getElementById('kpi-services-progress').style.width = `${(data.active_services / Math.max(1, data.total_services)) * 100}%`;
+            document.getElementById('kpi-alerts').textContent = data.alert_counts.Critical + data.alert_counts.Important + data.alert_counts.Warning;
+            
+            document.getElementById('crit-count').textContent = data.alert_counts.Critical;
+            document.getElementById('warn-count').textContent = data.alert_counts.Warning;
+            
+            // Count internal/external hosts
+            let internal = 0, external = 0;
+            netData.hosts.forEach(h => {
+                if (h.ip === "127.0.0.1" || h.ip.startsWith("192.168.")) internal++;
+                else external++;
+            });
+            document.getElementById('kpi-internal-hosts').textContent = internal;
+            document.getElementById('kpi-external-hosts').textContent = external;
+            
+            // Adjust status banner
+            const banner = document.getElementById('status-banner');
+            const statusIcon = document.getElementById('status-icon');
+            const statusTitle = document.getElementById('status-title');
+            if (data.alert_counts.Critical > 0) {
+                banner.style.borderLeftColor = 'var(--neon-magenta)';
+                banner.style.background = 'rgba(255, 0, 85, 0.04)';
+                statusIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                statusIcon.style.color = 'var(--neon-magenta)';
+                statusIcon.style.textShadow = '0 0 10px var(--neon-magenta)';
+                statusTitle.textContent = 'ESTADO DE LA INFRAESTRUCTURA: ALERTA CRÍTICA';
+            } else if (data.alert_counts.Warning > 0 || data.alert_counts.Important > 0) {
+                banner.style.borderLeftColor = 'var(--neon-orange)';
+                banner.style.background = 'rgba(255, 93, 0, 0.04)';
+                statusIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+                statusIcon.style.color = 'var(--neon-orange)';
+                statusIcon.style.textShadow = '0 0 10px var(--neon-orange)';
+                statusTitle.textContent = 'ESTADO DE LA INFRAESTRUCTURA: TELEMETRÍA ANÓMALA';
+            } else {
+                banner.style.borderLeftColor = 'var(--neon-cyan)';
+                banner.style.background = 'rgba(0, 240, 255, 0.04)';
+                statusIcon.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+                statusIcon.style.color = 'var(--neon-cyan)';
+                statusIcon.style.textShadow = '0 0 10px var(--neon-cyan)';
+                statusTitle.textContent = 'SISTEMA DE SEGURIDAD OPERATIVA: ESTABLE';
+            }
+
+            // 2. Render Active Alerts Table
+            const alertsTableBody = document.getElementById('alerts-table-body');
+            const rawAlerts = await API.getAlerts("Active", 5);
+            if (rawAlerts.length > 0) {
+                alertsTableBody.innerHTML = '';
+                rawAlerts.forEach(a => {
+                    let levelClass = 'cyan';
+                    if (a.level === 'Critical') levelClass = 'magenta';
+                    else if (a.level === 'Warning' || a.level === 'Important') levelClass = 'orange';
+
+                    alertsTableBody.innerHTML += `
+                        <tr class="mono">
+                            <td><span class="cyber-badge ${levelClass}">${a.level}</span></td>
+                            <td style="color: var(--neon-cyan); font-weight:700;">${a.source}</td>
+                            <td>${a.description}</td>
+                            <td>${new Date(a.timestamp).toLocaleTimeString()}</td>
+                            <td>
+                                <button class="cyber-btn" onclick="ackAlert(${a.id})" style="font-size:0.7rem; padding:4px 8px;"><i class="fa-solid fa-eye"></i> ACK</button>
+                                <button class="cyber-btn magenta" onclick="resolveAlert(${a.id})" style="font-size:0.7rem; padding:4px 8px;"><i class="fa-solid fa-square-check"></i> RES</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                alertsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center;" class="mono text-muted">Sin alertas activas detectadas.</td>
+                    </tr>
+                `;
+            }
+
+            // 3. Render Localhost resource charts (CPU, RAM, Disk)
+            const metrics = data.system_metrics;
+            renderLocalhostChart(metrics);
+            
+            // 4. Render Traffic Protocols Chart
+            renderTrafficChart(trafficData.protocol_summary);
+
+            // 5. Render Timeline
+            renderTimeline(rawAlerts, netData.hosts);
+            
+        } catch (e) {
+            console.error("Failed to load dashboard parameters:", e);
+        }
+    }
+
+    // Actions for alert acknowledgment and resolution
+    async function ackAlert(id) {
+        await API.acknowledgeAlert(id);
+        loadDashboard();
+    }
+    
+    async function resolveAlert(id) {
+        await API.resolveAlert(id);
+        loadDashboard();
+    }
+
+    // Render Localhost Chart.js
+    function renderLocalhostChart(metrics) {
+        const ctx = document.getElementById('localhostChart').getContext('2d');
+        const data = [metrics.cpu, metrics.ram, metrics.disk];
+
+        if (localhostChartInstance) {
+            localhostChartInstance.data.datasets[0].data = data;
+            localhostChartInstance.update();
+            return;
+        }
+
+        localhostChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['CPU (%)', 'RAM (%)', 'Disco (%)'],
+                datasets: [{
+                    label: 'Uso de Recursos',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(174, 0, 255, 0.45)', // Purple
+                        'rgba(255, 0, 179, 0.45)', // Pink
+                        'rgba(0, 255, 213, 0.45)'  // Teal
+                    ],
+                    borderColor: [
+                        '#ae00ff',
+                        '#ff00b3',
+                        '#00ffd5'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#8a8a9e', font: { family: 'Share Tech Mono' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#8a8a9e', font: { family: 'Rajdhani', weight: 'bold' } }
+                    }
+                }
+            }
+        });
+    }
+
+    // Render Traffic protocol chart
+    function renderTrafficChart(protocolStats) {
+        const ctx = document.getElementById('protocolChart').getContext('2d');
+        const labels = protocolStats.map(p => p.protocol);
+        const data = protocolStats.map(p => p.hits);
+
+        if (protocolChartInstance) {
+            protocolChartInstance.data.labels = labels;
+            protocolChartInstance.data.datasets[0].data = data;
+            protocolChartInstance.update();
+            return;
+        }
+
+        protocolChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#ae00ff',
+                        '#ff00b3',
+                        '#00ffd5',
+                        '#ff7b00',
+                        '#7000ff',
+                        '#ffea00'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#8a8a9e',
+                            font: { family: 'Share Tech Mono', size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Render system timeline dynamically
+    function renderTimeline(alerts, hosts) {
+        const timeline = document.getElementById('system-timeline');
+        let html = '';
+        
+        // Always add start node
+        html += `
+            <div class="timeline-item success">
+                <div class="timeline-time">08:00:00</div>
+                <div class="timeline-title">Sistema de Observabilidad Iniciado</div>
+                <div class="timeline-desc">Conexión con SQLite exitosa en localhost.</div>
+            </div>
+        `;
+
+        // Check if hosts are UP
+        hosts.forEach(h => {
+            if (h.status === 'UP') {
+                html += `
+                    <div class="timeline-item success">
+                        <div class="timeline-time">${new Date(h.updated_at).toLocaleTimeString()}</div>
+                        <div class="timeline-title">${h.hostname} disponible</div>
+                        <div class="timeline-desc">Monitoreo ICMP reporta latencia de ${h.latency_ms.toFixed(2)}ms.</div>
+                    </div>
+                `;
+            }
+        });
+
+        // Add active alerts to timeline
+        alerts.forEach(a => {
+            let typeClass = 'warning';
+            if (a.level === 'Critical') typeClass = 'critical';
+            
+            html += `
+                <div class="timeline-item ${typeClass}">
+                    <div class="timeline-time">${new Date(a.timestamp).toLocaleTimeString()}</div>
+                    <div class="timeline-title">Alerta Detectada: ${a.source}</div>
+                    <div class="timeline-desc">${a.description}</div>
+                </div>
+            `;
+        });
+
+        timeline.innerHTML = html;
+    }
+
+    // Auto-update loop (every 3 seconds)
+    setInterval(loadDashboard, 3000);
+    loadDashboard();
+</script>
+{% endblock %}

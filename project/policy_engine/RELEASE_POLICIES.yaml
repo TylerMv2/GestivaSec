@@ -1,0 +1,6 @@
+# GESTIVA SECURITY — POLICY ENGINE: RELEASE POLICIES
+
+release_policies:
+  semantic_versioning: true
+  current_release: "v0.1.0"
+  release_gate: "100_PERCENT_TEST_SUITE_PASSING"

@@ -1,0 +1,18 @@
+# GESTIVA SECURITY — GOVERNANCE ENGINE: ARTIFACT LIFECYCLE POLICIES
+
+lifecycle_policies:
+  states:
+    - "DRAFT"
+    - "IN_PROGRESS"
+    - "READY_FOR_REVIEW"
+    - "RETURNED"
+    - "APPROVED"
+    - "LOCKED"
+    - "SUPERSEDED"
+    - "ARCHIVED"
+  transitions:
+    DRAFT_TO_IN_PROGRESS: "Studio Action"
+    IN_PROGRESS_TO_READY_FOR_REVIEW: "Studio Assessment"
+    READY_FOR_REVIEW_TO_APPROVED: "ARB Decision ONLY"
+    READY_FOR_REVIEW_TO_RETURNED: "ARB Decision ONLY"
+    APPROVED_TO_LOCKED: "System Freeze"

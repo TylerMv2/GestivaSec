@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-cyan); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">
+            <i class="fa-solid fa-boxes-stacked"></i> INVENTARIO GENERAL DE ACTIVOS AUTORIZADOS
+        </h2>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Assets List -->
+    <div class="col-8">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-server"></i> ACTIVOS BAJO OBSERVACIÓN</span>
+                <span class="cyber-badge cyan">ASSET LIST</span>
+            </div>
+            <div id="assets-cards-container" style="display:flex; flex-direction:column; gap:15px;">
+                <!-- Dynamically loaded -->
+                <div class="mono text-muted" style="text-align:center; padding:20px;">Cargando activos...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Asset Form -->
+    <div class="col-4">
+        <div class="cyber-card warning" id="form-card">
+            <div class="card-header">
+                <span class="card-title" id="form-card-title" style="color:var(--neon-orange);"><i class="fa-solid fa-plus"></i> REGISTRAR NUEVO ACTIVO</span>
+                <span class="cyber-badge orange">CONFIG</span>
+            </div>
+            <form id="asset-form" onsubmit="saveAsset(event)">
+                <input type="hidden" id="asset-id" value="">
+                
+                <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">HOSTNAME</label>
+                <input type="text" class="cyber-input" id="asset-hostname" required placeholder="e.g. core-server.gestivaone.com">
+                
+                <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">IP ADDRESS</label>
+                <input type="text" class="cyber-input" id="asset-ip" required placeholder="e.g. 192.168.1.100">
+                
+                <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">SISTEMA OPERATIVO</label>
+                <input type="text" class="cyber-input" id="asset-os" placeholder="e.g. Ubuntu 22.04 LTS">
+                
+                <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">CLASIFICACIÓN</label>
+                <select class="cyber-select" id="asset-classification">
+                    <option value="Server">Servidores (Server)</option>
+                    <option value="Firewall">Cortafuegos (Firewall)</option>
+                    <option value="Switch">Switch / Core Switch</option>
+                    <option value="VM">Máquina Virtual (VM)</option>
+                    <option value="Client">Cliente (Desktop/Device)</option>
+                </select>
+                
+                <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">PUERTOS AUTORIZADOS (JSON Array)</label>
+                <input type="text" class="cyber-input mono" id="asset-ports" value="[80, 443]" placeholder="e.g. [22, 80, 443]">
+                
+                <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">ETIQUETAS (JSON Array)</label>
+                <input type="text" class="cyber-input mono" id="asset-tags" value='["web", "production"]' placeholder='e.g. ["local", "gateway"]'>
+                
+                <label class="mono" style="color:var(--neon-cyan); font-size:0.85rem;">NOTAS OPERACIONALES</label>
+                <textarea class="cyber-input" id="asset-notes" style="height:80px; resize:none;" placeholder="Detalles de administración..."></textarea>
+                
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button type="submit" class="cyber-btn" style="flex:1;"><i class="fa-solid fa-floppy-disk"></i> GUARDAR</button>
+                    <button type="button" class="cyber-btn magenta" onclick="resetForm()" style="flex:1;"><i class="fa-solid fa-rotate-left"></i> LIMPIAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Scripts -->
+<script>
+    async function loadAssets() {
+        try {
+            const hosts = await API.getHosts();
+            const container = document.getElementById('assets-cards-container');
+            container.innerHTML = '';
+            
+            hosts.forEach(h => {
+                let statusClass = h.status === 'UP' ? 'green' : 'magenta';
+                let ports = [];
+                try {
+                    ports = typeof h.ports_authorized === 'string' ? JSON.parse(h.ports_authorized || '[]') : (h.ports_authorized || []);
+                } catch (e) {
+                    console.error("Error parsing ports for host: " + h.hostname, e);
+                }
+                
+                let tags = [];
+                try {
+                    tags = typeof h.tags === 'string' ? JSON.parse(h.tags || '[]') : (h.tags || []);
+                } catch (e) {
+                    console.error("Error parsing tags for host: " + h.hostname, e);
+                }
+                
+                let tagsHtml = tags.map(t => `<span class="cyber-badge cyan" style="font-size:0.65rem; margin-right:5px; padding:1px 5px;">${t}</span>`).join('');
+                
+                container.innerHTML += `
+                    <div class="cyber-card" style="margin-bottom:0; background:rgba(255,255,255,0.01);">
+                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:10px; border-bottom:1px dashed rgba(0, 240, 255, 0.1); padding-bottom:8px;">
+                            <div>
+                                <h3 style="font-family:var(--font-display); color:var(--text-primary); margin:0;">
+                                    <i class="fa-solid fa-server"></i> ${h.hostname} 
+                                    <span style="font-size:0.85rem; color:var(--text-muted); font-weight:normal;">[${h.ip}]</span>
+                                </h3>
+                                <div style="margin-top:5px;">${tagsHtml}</div>
+                            </div>
+                            <span class="cyber-badge ${statusClass}">${h.status}</span>
+                        </div>
+                        <div class="cyber-grid" style="gap:10px; font-size:0.9rem;">
+                            <div class="col-6 mono">
+                                <strong>OS:</strong> ${h.os || 'Unknown'}<br>
+                                <strong>Clase:</strong> ${h.classification || 'Server'}<br>
+                                <strong>Latencia:</strong> ${(h.latency_ms || 0).toFixed(2)} ms
+                            </div>
+                            <div class="col-6 mono">
+                                <strong>Puertos Permitidos:</strong> ${ports.join(', ')}<br>
+                                <strong>Notas:</strong> <span style="color:var(--text-muted);">${h.notes || 'Ninguna'}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px; border-top:1px dashed rgba(255,255,255,0.05); padding-top:10px;">
+                            <button class="cyber-btn" onclick="editAsset(${h.id})" style="font-size:0.75rem; padding:4px 12px;"><i class="fa-solid fa-pen-to-square"></i> EDITAR</button>
+                            <button class="cyber-btn magenta" onclick="deleteAsset(${h.id})" style="font-size:0.75rem; padding:4px 12px;"><i class="fa-solid fa-trash-can"></i> ELIMINAR</button>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error("Failed to load assets:", e);
+            const container = document.getElementById('assets-cards-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="mono" style="color:var(--neon-magenta); text-align:center; padding:20px;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ERROR AL CARGAR ACTIVOS: ${e.message}<br>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">Revise la consola del navegador para más detalles.</span>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    async function saveAsset(e) {
+        e.preventDefault();
+        const id = document.getElementById('asset-id').value;
+        const hostData = {
+            hostname: document.getElementById('asset-hostname').value,
+            ip: document.getElementById('asset-ip').value,
+            os: document.getElementById('asset-os').value,
+            classification: document.getElementById('asset-classification').value,
+            ports_authorized: document.getElementById('asset-ports').value,
+            tags: document.getElementById('asset-tags').value,
+            notes: document.getElementById('asset-notes').value
+        };
+
+        try {
+            if (id) {
+                await API.updateHost(id, hostData);
+            } else {
+                await API.createHost(hostData);
+            }
+            resetForm();
+            loadAssets();
+        } catch (error) {
+            alert("Error al guardar activo: " + error.message);
+        }
+    }
+
+    async function editAsset(id) {
+        try {
+            const host = await API.getHost(id);
+            document.getElementById('asset-id').value = host.id;
+            document.getElementById('asset-hostname').value = host.hostname;
+            document.getElementById('asset-ip').value = host.ip;
+            document.getElementById('asset-os').value = host.os;
+            document.getElementById('asset-classification').value = host.classification;
+            document.getElementById('asset-ports').value = host.ports_authorized;
+            document.getElementById('asset-tags').value = host.tags;
+            document.getElementById('asset-notes').value = host.notes;
+
+            document.getElementById('form-card-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> EDITAR ACTIVO #${host.id}`;
+            document.getElementById('form-card').className = "cyber-card warning";
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function deleteAsset(id) {
+        if (confirm("¿Está seguro de que desea eliminar este activo? Se borrarán sus datos y telemetrías asociadas.")) {
+            await API.deleteHost(id);
+            loadAssets();
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('asset-id').value = '';
+        document.getElementById('asset-form').reset();
+        document.getElementById('form-card-title').innerHTML = `<i class="fa-solid fa-plus"></i> REGISTRAR NUEVO ACTIVO`;
+        document.getElementById('form-card').className = "cyber-card warning";
+    }
+
+    loadAssets();
+</script>
+{% endblock %}

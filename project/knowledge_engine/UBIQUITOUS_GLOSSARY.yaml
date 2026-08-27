@@ -1,0 +1,7 @@
+# GESTIVA SECURITY — KNOWLEDGE ENGINE: UBIQUITOUS GLOSSARY
+
+glossary:
+  NOC: "Network Operations Center — Monitoreo de disponibilidad y conectividad"
+  SOC: "Security Operations Center — Monitoreo de ciberamenazas y gestión de incidentes"
+  Slice: "Unidad mínima semántica e ejecutable con criterio DoR/DoD"
+  ARB: "Architecture Review Board — Autoridad máxima de gobernanza de arquitectura"

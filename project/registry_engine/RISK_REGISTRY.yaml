@@ -1,0 +1,22 @@
+# GESTIVA SECURITY — REGISTRY ENGINE: RISK REGISTRY
+
+risks:
+  - id: "RISK-001"
+    description: "Rate limiting en APIs públicas de Threat Intel"
+    severity: "MEDIUM"
+    mitigation: "Caché TTL de 12 horas en memoria"
+    status: "MITIGATED"
+
+  - id: "RISK-MIG-01"
+    description: "Ruptura de links markdown durante reorganización de docs/"
+    severity: "MEDIUM"
+    mitigation: "Validation Engine test_kernel_integrity.py"
+    status: "VERIFIED_PASS"
+
+  - id: "RISK-MIG-02"
+    description: "Rollback Risk durante la migración de archivos de arquitectura"
+    severity: "HIGH"
+    mitigation: "Plan de Restauración mediante Tag v0.1.0-pre-kernel y Git Checkpoint"
+    restoration_point: "v0.1.0-pre-kernel"
+    reversion_criteria: "Fallo no recuperable en test_kernel_integrity.py"
+    status: "MITIGATED"

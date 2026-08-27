@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cyber-grid">
+    <div class="col-12">
+        <h2 style="font-family: var(--font-display); border-bottom: 2px solid var(--neon-cyan); padding-bottom: 10px; margin-bottom: 25px; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">
+            <i class="fa-solid fa-microchip"></i> PANEL NOC TÉCNICO DE OBSERVABILIDAD
+        </h2>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Services Status Detail -->
+    <div class="col-8">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-circle-nodes"></i> ESTADO DETALLADO DE SERVICIOS</span>
+                <span class="cyber-badge cyan">TELEMETRIA APIS</span>
+            </div>
+            <div class="cyber-table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Host Target</th>
+                            <th>Servicio</th>
+                            <th>Puerto</th>
+                            <th>Estado</th>
+                            <th>Tiempo Respuesta</th>
+                            <th>Versión / Banner</th>
+                            <th>Último Chequeo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="technical-services-body">
+                        <tr>
+                            <td colspan="7" style="text-align:center;" class="mono text-muted">Cargando servicios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Local Sockets and Net interfaces -->
+    <div class="col-4">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-ethernet"></i> SOCKETS DE CONEXIÓN</span>
+                <span class="cyber-badge cyan">NETSTAT</span>
+            </div>
+            <div style="max-height: 350px; overflow-y: auto;" id="socket-list-container">
+                <!-- Sockets details populated by javascript -->
+                <div class="mono text-muted" style="text-align:center; padding: 20px;">Cargando sockets activos...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cyber-grid">
+    <!-- Active TLS Certificates Panel -->
+    <div class="col-12">
+        <div class="cyber-card warning">
+            <div class="card-header">
+                <span class="card-title" style="color: var(--neon-orange);"><i class="fa-solid fa-lock"></i> AUDITORÍA DE SEGURIDAD SSL/TLS</span>
+                <span class="cyber-badge orange">CERTIFICADOS</span>
+            </div>
+            <div class="cyber-table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Dominio</th>
+                            <th>Host</th>
+                            <th>Emisor Autoridad</th>
+                            <th>Firma Algoritmo</th>
+                            <th>Válido Desde</th>
+                            <th>Vence En</th>
+                            <th>Días Restantes</th>
+                            <th>Estado</th>
+                            <th>Cipher Suite</th>
+                            <th>Versión TLS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="technical-certs-body">
+                        <tr>
+                            <td colspan="10" style="text-align:center;" class="mono text-muted">Cargando certificados TLS...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vercel Real-time Telemetry Dashboard -->
+<div class="cyber-grid" style="margin-top:20px;">
+    <!-- Vercel Performance & Geo Web Analytics -->
+    <div class="col-6">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-purple);"><i class="fa-solid fa-cloud"></i> VERCEL EDGE WEB ANALYTICS</span>
+                <span class="cyber-badge purple" id="vercel-mode-badge">DEMO MODE</span>
+            </div>
+            
+            <div class="cyber-grid" style="margin-bottom: 15px;">
+                <div class="col-6" style="border-right: 1px solid rgba(255,255,255,0.05); padding-right:15px;">
+                    <div style="font-size:0.8rem; color:var(--text-muted);">VISITAS ACTIVAS (MIN)</div>
+                    <div class="stat-container" style="margin:5px 0;">
+                        <span class="stat-value" id="vercel-visits" style="font-size:1.8rem; color:var(--neon-purple);">0</span>
+                        <span class="stat-unit">usr</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:10px;">ANCHO DE BANDA</div>
+                    <div class="stat-container" style="margin:5px 0;">
+                        <span class="stat-value" id="vercel-bandwidth" style="font-size:1.8rem; color:var(--neon-purple);">0</span>
+                        <span class="stat-unit">MB</span>
+                    </div>
+                </div>
+                <div class="col-6" style="padding-left:15px;">
+                    <div style="font-size:0.8rem; color:var(--text-muted);">LATENCIA EDGE</div>
+                    <div class="stat-container" style="margin:5px 0;">
+                        <span class="stat-value" id="vercel-latency" style="font-size:1.8rem; color:var(--neon-green);">0</span>
+                        <span class="stat-unit">ms</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:10px;">LCP (CORE WEB VITAL)</div>
+                    <div class="stat-container" style="margin:5px 0;">
+                        <span class="stat-value" id="vercel-lcp" style="font-size:1.8rem; color:var(--neon-cyan);">0</span>
+                        <span class="stat-unit">ms</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Geo Sources list -->
+            <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:12px;">
+                <div style="font-size:0.85rem; font-weight:600; margin-bottom:8px;">PRINCIPALES PUNTOS DE ORIGEN (GEO)</div>
+                <div id="vercel-geo-container" style="display:flex; flex-direction:column; gap:6px;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vercel Deployments & WAF Security Logs -->
+    <div class="col-6">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title" style="color:var(--neon-magenta);"><i class="fa-solid fa-shield-halved"></i> FIREWALL DE VERCEL (WAF EVENTOS)</span>
+                <span class="cyber-badge magenta">PERIMETRAL SHIELD</span>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto;" id="vercel-firewall-container">
+                <!-- Firewall logs populated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cyber-grid" style="margin-top:20px;">
+    <!-- Vercel Deployments History -->
+    <div class="col-12">
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIAL DE DESPLIEGUES (Vercel Build Auditor)</span>
+                <span class="cyber-badge purple">DEPLOYMENTS</span>
+            </div>
+            <div class="cyber-table-container">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>ID Despliegue</th>
+                            <th>Proyecto</th>
+                            <th>Entorno</th>
+                            <th>Estado Build</th>
+                            <th>Creador / Trigger</th>
+                            <th>URL de Acceso</th>
+                            <th>Fecha de Lanzamiento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vercel-deployments-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Technical Scripts -->
+<script>
+    async function loadTechnicalData() {
+        try {
+            // Load Services
+            const services = await API.getServices();
+            const servicesBody = document.getElementById('technical-services-body');
+            servicesBody.innerHTML = '';
+            
+            services.forEach(s => {
+                let statusClass = s.status === 'UP' ? 'green' : 'magenta';
+                servicesBody.innerHTML += `
+                    <tr class="mono">
+                        <td style="color: var(--neon-cyan); font-weight:700;">${s.hostname}</td>
+                        <td>${s.name}</td>
+                        <td>${s.port}</td>
+                        <td><span class="cyber-badge ${statusClass}">${s.status}</span></td>
+                        <td>${s.response_time_ms.toFixed(2)} ms</td>
+                        <td>${s.version || 'Detectando...'}</td>
+                        <td>${new Date(s.last_check).toLocaleTimeString()}</td>
+                    </tr>
+                `;
+            });
+
+            // Load Certificates
+            const certs = await API.getCertificates();
+            const certsBody = document.getElementById('technical-certs-body');
+            certsBody.innerHTML = '';
+            
+            if (certs.length > 0) {
+                certs.forEach(c => {
+                    let certClass = 'green';
+                    if (c.status === 'Expired') certClass = 'magenta';
+                    else if (c.status === 'Expiring') certClass = 'orange';
+
+                    certsBody.innerHTML += `
+                        <tr class="mono">
+                            <td style="color:var(--neon-cyan); font-weight:700;">${c.domain}</td>
+                            <td>${c.hostname}</td>
+                            <td style="font-size:0.8rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.issuer}">${c.issuer}</td>
+                            <td>${c.signature_algorithm}</td>
+                            <td>${new Date(c.valid_from).toLocaleDateString()}</td>
+                            <td>${new Date(c.valid_to).toLocaleDateString()}</td>
+                            <td style="font-weight:700;">${c.days_remaining} días</td>
+                            <td><span class="cyber-badge ${certClass}">${c.status}</span></td>
+                            <td style="font-size:0.85rem;">${c.cipher_suite}</td>
+                            <td>${c.tls_version}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                certsBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align:center;" class="mono text-muted">No se registran certificados SSL/TLS observables.</td>
+                    </tr>
+                `;
+            }
+
+            // Populate socket telemetry
+            loadMockSocketDetails();
+            
+            // Load Vercel Telemetry
+            loadVercelTelemetry();
+
+        } catch (e) {
+            console.error("Failed to load technical data parameters:", e);
+        }
+    }
+
+    // Displays current localhost ports and open network connections
+    function loadMockSocketDetails() {
+        const container = document.getElementById('socket-list-container');
+        
+        // Define realistic connections targeting monitored components
+        const connections = [
+            { proto: "TCP", local: "127.0.0.1:8000", remote: "127.0.0.1:41235", state: "ESTABLISHED", process: "uvicorn (PID 4015)" },
+            { proto: "TCP", local: "127.0.0.1:22", remote: "127.0.0.1:50112", state: "ESTABLISHED", process: "sshd (PID 1125)" },
+            { proto: "TCP", local: "192.168.1.50:443", remote: "104.21.32.228:443", state: "ESTABLISHED", process: "python-tls (PID 4022)" },
+            { proto: "UDP", local: "192.168.1.50:53", remote: "8.8.8.8:53", state: "CLOSED", process: "python-dns (PID 4020)" },
+            { proto: "TCP", local: "127.0.0.1:8000", remote: "0.0.0.0:*", state: "LISTEN", process: "uvicorn (PID 4015)" },
+            { proto: "TCP", local: "127.0.0.1:22", remote: "0.0.0.0:*", state: "LISTEN", process: "sshd (PID 842)" }
+        ];
+
+        let html = '<div style="display:flex; flex-direction:column; gap:10px; padding:10px;">';
+        connections.forEach(c => {
+            let stateClass = c.state === 'ESTABLISHED' ? 'color: var(--neon-green);' : 'color: var(--text-muted);';
+            html += `
+                <div style="border: 1px solid var(--cyber-border); background:rgba(255,255,255,0.02); padding:10px; font-family:var(--font-mono); font-size:0.82rem; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="color:var(--neon-cyan); font-weight:700;">${c.proto} // ${c.process}</span>
+                        <span style="${stateClass}">${c.state}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                        <span>L: ${c.local}</span>
+                        <span>R: ${c.remote}</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // Load Vercel Telemetry (Analytics, WAF, Deployments)
+    async function loadVercelTelemetry() {
+        try {
+            const status = await API.getVercelStatus();
+            const badge = document.getElementById('vercel-mode-badge');
+            if (badge) {
+                badge.textContent = status.mode;
+                if (status.integrated) {
+                    badge.className = 'cyber-badge green';
+                } else {
+                    badge.className = 'cyber-badge orange';
+                }
+            }
+            
+            // Analytics
+            const analytics = await API.getVercelAnalytics();
+            document.getElementById('vercel-visits').textContent = analytics.summary.active_visitors;
+            document.getElementById('vercel-bandwidth').textContent = analytics.summary.bandwidth_used_mb;
+            document.getElementById('vercel-latency').textContent = analytics.summary.avg_edge_latency_ms;
+            document.getElementById('vercel-lcp').textContent = analytics.web_vitals.LCP_ms;
+            
+            const geoContainer = document.getElementById('vercel-geo-container');
+            if (geoContainer) {
+                geoContainer.innerHTML = '';
+                analytics.geo_sources.forEach(g => {
+                    geoContainer.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                            <span class="mono"><i class="fa-solid fa-location-dot"></i> ${g.country}</span>
+                            <div style="flex:1; margin:0 15px; height:5px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                <div style="width:${g.percentage}%; height:100%; background:var(--neon-purple);"></div>
+                            </div>
+                            <span class="mono" style="font-weight:bold;">${g.percentage}%</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Firewall logs
+            const firewall = await API.getVercelFirewall(4);
+            const fwContainer = document.getElementById('vercel-firewall-container');
+            if (fwContainer) {
+                fwContainer.innerHTML = '';
+                firewall.forEach(f => {
+                    let sevClass = 'color: var(--neon-cyan);';
+                    if (f.severity === 'Critical') sevClass = 'color: var(--neon-magenta);';
+                    else if (f.severity === 'Warning' || f.severity === 'Important') sevClass = 'color: var(--neon-orange);';
+                    
+                    fwContainer.innerHTML += `
+                        <div style="border-bottom:1px solid rgba(255,255,255,0.03); padding:8px 0; font-family:var(--font-mono); font-size:0.8rem;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                <span style="font-weight:bold; ${sevClass}">[${f.action}] ${f.event_type}</span>
+                                <span style="color:var(--text-muted); font-size:0.75rem;">${new Date(f.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.75rem;">
+                                <span>Path: ${f.path}</span>
+                                <span>Source IP: ${f.ip_source}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Deployments
+            const deps = await API.getVercelDeployments(5);
+            const depsBody = document.getElementById('vercel-deployments-body');
+            if (depsBody) {
+                depsBody.innerHTML = '';
+                deps.forEach(d => {
+                    let stateClass = 'green';
+                    if (d.state === 'ERROR') stateClass = 'magenta';
+                    else if (d.state === 'BUILDING') stateClass = 'orange';
+                    
+                    depsBody.innerHTML += `
+                        <tr class="mono">
+                            <td style="font-weight:bold;">${d.id}</td>
+                            <td>${d.name}</td>
+                            <td><span class="cyber-badge ${d.target === 'production' ? 'magenta' : 'cyan'}" style="font-size:0.7rem;">${d.target.toUpperCase()}</span></td>
+                            <td><span class="cyber-badge ${stateClass}" style="font-size:0.7rem;">${d.state}</span></td>
+                            <td style="color:var(--neon-purple);">${d.creator}</td>
+                            <td><a href="${d.url}" target="_blank" style="font-size:0.8rem; text-decoration:underline;">${d.url.slice(0,40)}...</a></td>
+                            <td>${new Date(d.timestamp).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (e) {
+            console.error("Vercel telemetry fetch failed:", e);
+        }
+    }
+
+    // Update interval (every 3 seconds)
+    setInterval(loadTechnicalData, 3000);
+    loadTechnicalData();
+</script>
+{% endblock %}

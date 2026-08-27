@@ -1,0 +1,9 @@
+# GESTIVA SECURITY — RUNTIME ENGINE: ACTIVE CONTEXT
+
+active_context:
+  active_document: "docs/02-domain-model/IAM_AUDIT_SPEC.md"
+  active_document_status: "IN_PROGRESS"
+  active_domain: "IAM"
+  active_capability: "CAP-01"
+  active_slice: "IAM-AUDIT"
+  execution_mode: "PRODUCT_SLICE_DEVELOPMENT"

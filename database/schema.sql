@@ -1,0 +1,122 @@
+-- GESTIVA SECURITY (GESTIVASEC V1) — OFFICIAL DATABASE SCHEMA
+-- Strict Compliance with Business Rules (BR-01..BR-05) and Multi-Tenant Isolation (BR-04)
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 1. ORGANIZATIONS (TENANT ISOLATION BOUNDARY BR-04)
+CREATE TABLE IF NOT EXISTS organizations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE_ORGANIZATION',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. DIGITAL ASSETS (ENT-01 / AGG-01 / BR-02)
+CREATE TABLE IF NOT EXISTS assets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    target_url VARCHAR(1024) NOT NULL,
+    criticality VARCHAR(50) NOT NULL DEFAULT 'P3_MEDIUM',
+    owner_email VARCHAR(255) NOT NULL, -- Required by BR-02
+    status VARCHAR(50) NOT NULL DEFAULT 'REGISTERED',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_assets_org ON assets(organization_id);
+CREATE INDEX IF NOT EXISTS idx_assets_status ON assets(status);
+
+-- 3. DIGITAL CREDENTIALS (ENT-05 / AGG-01)
+CREATE TABLE IF NOT EXISTS credentials (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    issuer VARCHAR(255) NOT NULL,
+    issued_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'VALID',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. OPERATIONAL INCIDENTS (ENT-02 / AGG-02 / BR-01)
+CREATE TABLE IF NOT EXISTS incidents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+    priority VARCHAR(50) NOT NULL DEFAULT 'P1_CRITICAL',
+    status VARCHAR(50) NOT NULL DEFAULT 'DECLARED',
+    assigned_operator VARCHAR(255),
+    declared_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    sla_deadline TIMESTAMP WITH TIME ZONE NOT NULL,
+    remediated_at TIMESTAMP WITH TIME ZONE,
+    closed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_incidents_org ON incidents(organization_id);
+CREATE INDEX IF NOT EXISTS idx_incidents_priority ON incidents(priority);
+
+-- 5. ROOT CAUSE ANALYSIS REPORTS (ENT-03 / AGG-02 / BR-01)
+CREATE TABLE IF NOT EXISTS rca_reports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    incident_id UUID UNIQUE NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    root_cause_description TEXT NOT NULL,
+    remediation_steps TEXT NOT NULL,
+    preventive_measures TEXT NOT NULL,
+    is_validated BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. SECURITY FINDINGS (ENT-04 / AGG-03)
+CREATE TABLE IF NOT EXISTS security_findings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+    owasp_category VARCHAR(100) NOT NULL,
+    mitre_tactic VARCHAR(100) NOT NULL,
+    severity VARCHAR(50) NOT NULL DEFAULT 'HIGH',
+    description TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'DETECTED',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7. OPERATIONAL ALERTS (AGG-01 / COMP-05)
+CREATE TABLE IF NOT EXISTS alerts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+    signal_type VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    is_grouped BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. IMMUTABLE AUDIT TRAIL (ENT-06 / AGG-04 / BR-05 APPEND-ONLY)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    actor_identity VARCHAR(255) NOT NULL,
+    action_executed VARCHAR(255) NOT NULL,
+    entity_type VARCHAR(100) NOT NULL,
+    entity_id VARCHAR(255) NOT NULL,
+    details JSONB NOT NULL DEFAULT '{}'::jsonb,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_org ON audit_logs(organization_id);
+
+-- TRIGGER FOR APPEND-ONLY INVIOLABILITY ON AUDIT LOGS (BR-05)
+CREATE OR REPLACE FUNCTION prevent_audit_log_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'BR-05 VIOLATION: Immutable Audit Trail records cannot be modified or deleted.';
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_audit_logs_immutable ON audit_logs;
+CREATE TRIGGER trg_audit_logs_immutable
+BEFORE UPDATE OR DELETE ON audit_logs
+FOR EACH ROW EXECUTE FUNCTION prevent_audit_log_modification();

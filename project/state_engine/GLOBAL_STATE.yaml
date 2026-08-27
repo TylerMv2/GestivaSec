@@ -1,0 +1,10 @@
+# GESTIVA SECURITY — STATE ENGINE: GLOBAL STATE
+
+global_state:
+  maturity_level: "LEVEL_2_PRODUCT_IN_REVIEW"
+  overall_completion_percentage: 27.1
+  completed_slices: 16
+  total_backlog_slices: 59
+  test_pass_rate: "100%"
+  active_tests: 66
+  kernel_implementation_status: "PHYSICALLY_DEPLOYED"

@@ -1,0 +1,604 @@
+/* GESTIVA SECURITY (GESTIVASEC V1) — RETRO-CYBERPUNK DESIGN SYSTEM */
+:root {
+    --bg-dark: #070913;
+    --bg-card: rgba(13, 20, 36, 0.85);
+    --border-color: rgba(0, 240, 255, 0.2);
+    --border-glow: rgba(0, 240, 255, 0.4);
+    --primary: #00f0ff;
+    --primary-hover: #00c8d6;
+    --accent: #ff0055;
+    --success: #00ff66;
+    --warning: #ffcc00;
+    --danger: #ff0055;
+    --text-main: #f3f4f6;
+    --text-muted: #8b9bb4;
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(255, 0, 85, 0.05) 0%, transparent 40%);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* SIDEBAR STYLING */
+.sidebar {
+    width: 280px;
+    background: rgba(9, 13, 24, 0.95);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo-icon {
+    font-size: 1.8rem;
+    filter: drop-shadow(0 0 8px var(--primary));
+}
+
+.brand-name {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    display: block;
+}
+
+.brand-sub {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    flex-grow: 1;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.menu-item:hover, .menu-item.active {
+    color: var(--text-main);
+    background: rgba(0, 240, 255, 0.1);
+    border-color: var(--border-color);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+}
+
+.sidebar-footer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.user-profile-widget {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+}
+
+.dot.online {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--success);
+}
+
+/* MAIN CONTENT */
+.main-content {
+    flex-grow: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title h1 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+.page-title .subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* GLASSMORPHISM CARDS */
+.glass {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* METRICS GRID */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.metric-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.metric-icon {
+    font-size: 1.8rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(0, 240, 255, 0.1);
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* PROGRESS GAUGE BAR */
+.progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--success));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.progress-bar-fill.warning {
+    background: linear-gradient(90deg, var(--warning), var(--accent));
+}
+
+/* CHART CONTAINER */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    margin-top: 1rem;
+}
+
+/* TABLE STYLING */
+.content-card {
+    padding: 1.5rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.card-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table th, .data-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(0, 240, 255, 0.03);
+}
+
+/* BUTTONS */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), #00a8ff);
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.7);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.78rem;
+}
+
+/* STATUS BADGES */
+.badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-success { background: rgba(0, 255, 102, 0.15); color: var(--success); border: 1px solid var(--success); }
+.badge-danger { background: rgba(255, 0, 85, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+.badge-warning { background: rgba(255, 204, 0, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+
+/* MODALS & TOASTS */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 1.75rem;
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal-form label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+}
+
+.modal-form input, .modal-form select {
+    width: 100%;
+    padding: 0.65rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: #fff;
+    font-family: var(--font-body);
+}
+
+.modal-form input:focus, .modal-form select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.toast-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 1100;
+}
+
+.toast {
+    padding: 0.85rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    animation: slideIn 0.3s ease;
+}
+
+.toast.success { background: rgba(0, 255, 102, 0.9); color: #000; }
+.toast.error { background: rgba(255, 0, 85, 0.9); }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   GESTIVASEC MANDATORY 12-STATE UI SCREEN MACHINE & COMPONENT STYLES
+   ========================================================================== */
+
+/* 1. SKELETON LOADERS (NO GENERIC SPINNERS) */
+.skeleton-line {
+    height: 14px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 240, 255, 0.18) 50%, rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite linear;
+    border-radius: 4px;
+    display: inline-block;
+}
+.skeleton-line.short { width: 40%; }
+.skeleton-line.medium { width: 70%; }
+.skeleton-line.full { width: 100%; }
+
+.skeleton-card {
+    background: rgba(13, 20, 36, 0.6) !important;
+    border: 1px solid rgba(0, 240, 255, 0.15) !important;
+    border-radius: 12px;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* 2. HIGH-SEVERITY ALARM FLASH STATE (SUBTLE BORDER GLOW) */
+.alarm-flash-critical {
+    border-color: #ff0055 !important;
+    box-shadow: 0 0 16px rgba(255, 0, 85, 0.45), inset 0 0 8px rgba(255, 0, 85, 0.15) !important;
+    animation: alarm-border-pulse 2s infinite ease-in-out !important;
+}
+
+@keyframes alarm-border-pulse {
+    0% { box-shadow: 0 0 8px rgba(255, 0, 85, 0.35); }
+    50% { box-shadow: 0 0 22px rgba(255, 0, 85, 0.75); }
+    100% { box-shadow: 0 0 8px rgba(255, 0, 85, 0.35); }
+}
+
+/* 3. ERROR & PIPELINE DISCONNECT CONTAINER */
+.gestiva-error-container {
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background: rgba(255, 0, 85, 0.04);
+    border: 1px dashed rgba(255, 0, 85, 0.35);
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+.gestiva-error-container .error-icon {
+    font-size: 2.5rem;
+    color: var(--danger);
+    text-shadow: 0 0 12px rgba(255, 0, 85, 0.5);
+    margin-bottom: 0.75rem;
+}
+.gestiva-error-container h3 {
+    font-family: var(--font-heading);
+    color: var(--text-main);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+.gestiva-error-container p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-family: var(--font-body);
+    margin-bottom: 1.25rem;
+}
+
+/* 4. EMPTY / NO RESULTS CONTAINER */
+.gestiva-empty-container {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    background: rgba(0, 240, 255, 0.02);
+    border: 1px dashed rgba(0, 240, 255, 0.25);
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+.gestiva-empty-container .empty-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    opacity: 0.85;
+    text-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    margin-bottom: 1rem;
+}
+.gestiva-empty-container h3 {
+    font-family: var(--font-heading);
+    color: var(--text-main);
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+}
+.gestiva-empty-container p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+/* 5. PERMISSION DENIED CONTAINER */
+.gestiva-permission-container {
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background: rgba(255, 204, 0, 0.04);
+    border: 1px dashed rgba(255, 204, 0, 0.35);
+    border-radius: 12px;
+}
+.read-only-badge {
+    background: rgba(255, 204, 0, 0.1);
+    color: var(--warning);
+    border: 1px solid var(--warning);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* 6. REALTIME STATUS BADGES */
+.realtime-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.realtime-badge.connected {
+    background: rgba(0, 255, 102, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(0, 255, 102, 0.3);
+}
+.realtime-badge.reconnecting {
+    background: rgba(255, 204, 0, 0.1);
+    color: var(--warning);
+    border: 1px solid rgba(255, 204, 0, 0.3);
+}
+.realtime-badge.offline {
+    background: rgba(255, 0, 85, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(255, 0, 85, 0.3);
+}
+.realtime-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.realtime-badge.connected .realtime-dot {
+    background: var(--success);
+    box-shadow: 0 0 6px var(--success);
+}
+.realtime-badge.reconnecting .realtime-dot {
+    background: var(--warning);
+    box-shadow: 0 0 6px var(--warning);
+    animation: pulse-dot 1s infinite;
+}
+.realtime-badge.offline .realtime-dot {
+    background: var(--danger);
+    box-shadow: 0 0 6px var(--danger);
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+

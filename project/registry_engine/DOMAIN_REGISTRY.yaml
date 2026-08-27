@@ -1,0 +1,20 @@
+# GESTIVA SECURITY — REGISTRY ENGINE: DOMAIN REGISTRY
+
+domains:
+  - id: "DOM-IAM"
+    name: "Identity & Access Management"
+    bounded_context: "iam_context"
+    owner: "Security Architect"
+    status: "ACTIVE"
+
+  - id: "DOM-AST"
+    name: "Digital Asset Management"
+    bounded_context: "asset_context"
+    owner: "Product Architect"
+    status: "ACTIVE"
+
+  - id: "DOM-MON"
+    name: "Continuous Monitoring Engine"
+    bounded_context: "monitoring_context"
+    owner: "Software Architect"
+    status: "ACTIVE"
